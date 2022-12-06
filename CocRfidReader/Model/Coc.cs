@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CocRfidReader.Model
 {
-    internal class Coc : IEqualityComparer<Coc>
+    public class Coc : IEqualityComparer<Coc>
     {
         public int? PRODUKTIONSNR { get; set; }
         public string? ItemNumber { get; set; }

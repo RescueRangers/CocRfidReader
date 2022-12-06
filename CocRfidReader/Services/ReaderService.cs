@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Impinj.OctaneSdk;
+﻿using Impinj.OctaneSdk;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -118,7 +113,7 @@ namespace CocRfidReader.Services
 
         private void Reader_KeepaliveReceived(ImpinjReader reader)
         {
-            _logger?.LogDebug("Keepalive received from {0}", reader.Address);
+            _logger?.LogInformation("Keepalive received from {0}", reader.Address);
         }
     }
 }

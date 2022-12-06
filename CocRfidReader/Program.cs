@@ -1,10 +1,12 @@
 ﻿using System.Collections.Concurrent;
+using CocRfidReader.Model;
 using CocRfidReader.Services;
 using ConcurrentObservableCollections.ConcurrentObservableDictionary;
 using Impinj.OctaneSdk;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
+using Microsoft.Extensions.Logging;
 using Serilog.Formatting.Compact;
 
 namespace CocRfidReader
@@ -12,6 +14,12 @@ namespace CocRfidReader
     internal class Program
     {
         private static ConcurrentObservableDictionary<string, Tag> tags = new ConcurrentObservableDictionary<string, Tag>();
+        private static ConcurrentObservableDictionary<string, Coc?> cocs = new ConcurrentObservableDictionary<string, Coc?>();
+        private static ConcurrentObservableDictionary<string, TagItem?> items = new ConcurrentObservableDictionary<string, TagItem?>();
+        private static ILogger<Program> logger;
+
+        private static CocReader cocReader;
+        private static ItemReader itemReader;
 
         static void Main(string[] args)
         {
@@ -42,12 +50,17 @@ namespace CocRfidReader
 #endif
                 .AddSingleton<IConfiguration>(builder)
                 .AddSingleton<ReaderService>()
+                .AddSingleton<CocReader>()
+                .AddSingleton<ItemReader>()
                 .BuildServiceProvider();
 
             var reader = serviceProvider.GetRequiredService<ReaderService>().Reader;
+            cocReader = serviceProvider.GetRequiredService<CocReader>();
+            itemReader = serviceProvider.GetRequiredService<ItemReader>();
+            logger = serviceProvider.GetRequiredService<ILogger<Program>>();
 
             reader.TagsReported += Reader_TagsReported;
-            tags.CollectionChanged += Tags_CollectionChanged;
+            //tags.CollectionChanged += Tags_CollectionChanged;
 
             Console.WriteLine("Press \"R\" to start readind");
 
@@ -65,11 +78,43 @@ namespace CocRfidReader
             Console.WriteLine("Hello, World!");
         }
 
-        private static void Tags_CollectionChanged(object? sender, DictionaryChangedEventArgs<string, Tag> e)
+        private async static void Tags_CollectionChanged(object? sender, DictionaryChangedEventArgs<string, Tag> e)
         {
             if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add)
             {
-                Console.WriteLine($"Tag added with epc: {e.NewValue.Epc}");
+                try
+                {
+                    var epcValue = e.NewValue.Epc.ToHexString();
+                    Console.WriteLine($"Tag added with epc: {e.NewValue.Epc}");
+                    if (epcValue.StartsWith("888"))
+                    {
+                        logger.LogInformation("Getting COC from the database");
+                        var coc = await cocReader.GetAsync(epcValue);
+
+                        if (coc == null) return;
+
+                        logger.LogInformation($"Database returned {coc.PRODUKTIONSNR}");
+                        cocs.TryAdd(epcValue, coc);
+                        Console.WriteLine($"Added COC: {coc.PRODUKTIONSNR}");
+                    }
+                    else if (epcValue.StartsWith("777"))
+                    {
+                        logger.LogInformation("Getting Item from the database");
+                        var item = await itemReader.GetAsync(epcValue);
+
+                        if (item == null) return;
+
+                        logger.LogInformation($"Database returned {item.ItemNumber}");
+                        items.TryAdd(epcValue, item);
+                        Console.WriteLine($"Added item: {item.ItemNumber}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex.Message);
+                    throw;
+                }
+                
             }
         }
 
