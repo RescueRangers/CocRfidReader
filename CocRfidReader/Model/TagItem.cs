@@ -13,5 +13,10 @@ namespace CocRfidReader.Model
         public string? ItemNumber { get; set; }
         public string? ItemName1 { get; set; }
         public DateTime? InsertedTimestamp { get; set; }
+
+        public override string ToString()
+        {
+            return $"{ItemNumber} | {ItemName1}";
+        }
     }
 }

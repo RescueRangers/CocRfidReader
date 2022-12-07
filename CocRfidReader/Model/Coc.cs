@@ -45,5 +45,10 @@ namespace CocRfidReader.Model
             }
             return hash;
         }
+
+        public override string ToString()
+        {
+            return $"{PRODUKTIONSNR} | {Name} | {ItemNumber} {ItemText}";
+        }
     }
 }
