@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="ConcurrentObservableCollections" Version="1.1.9" />
+    <PackageReference Include="Elastic.CommonSchema.Serilog" Version="1.5.3" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.0" />
@@ -24,7 +25,27 @@
     <PackageReference Include="Serilog.Extensions.Logging" Version="3.1.0" />
     <PackageReference Include="Serilog.Formatting.Compact" Version="1.1.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
+    <PackageReference Include="Serilog.Sinks.Debug" Version="2.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CocRfidReader\CocRfidReader.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Configuration\settings.Debug.json">
+      <DependentUpon>settings.json</DependentUpon>
+      <IsTransformFile>true</IsTransformFile>
+    </None>
+    <None Update="Configuration\settings.json">
+      <TransformOnBuild>true</TransformOnBuild>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Configuration\settings.Release.json">
+      <DependentUpon>settings.json</DependentUpon>
+      <IsTransformFile>true</IsTransformFile>
+    </None>
   </ItemGroup>
 
 </Project>

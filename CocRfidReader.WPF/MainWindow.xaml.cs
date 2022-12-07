@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using CocRfidReader.WPF.ViewModels;
 
 namespace CocRfidReader.WPF
 {
@@ -20,8 +21,11 @@ namespace CocRfidReader.WPF
     /// </summary>
     public partial class MainWindow : Window
     {
-        public MainWindow()
+        private MainWindowViewModel viewModel;
+        public MainWindow(MainWindowViewModel viewModel)
         {
+            this.viewModel = viewModel;
+            DataContext = viewModel;
             InitializeComponent();
         }
     }
