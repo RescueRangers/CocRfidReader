@@ -28,12 +28,13 @@ namespace CocRfidReader.Services
             {
                 using var sql = new SqlConnection(configuration.GetValue<string>("connectionString"));
                 return await sql.QueryFirstOrDefaultAsync<Coc>(@"
-SELECT [Id]
-      ,[EPC]
-      ,[DataSet]
-      ,[PRODUKTIONSNR]
-      ,[InsertedTimestamp]
-  FROM [Prosign_ItemControl].[dbo].[TagCoc]
+SELECT TOP (1) 
+      A.[PRODUKTIONSNR]
+	  ,B.ItemNumber
+	  ,B.Name
+	  ,B.ItemText
+  FROM [Prosign_ItemControl].[dbo].[TagCoc] A
+  INNER JOIN [Prosign_ItemControl].[dbo].[CocPrintQueueLog] B on A.PRODUKTIONSNR = B.PRODUKTIONSNR
   WHERE EPC = @EPC", new { EPC = epc });
 
             }
