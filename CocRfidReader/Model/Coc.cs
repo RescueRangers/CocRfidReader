@@ -1,24 +1,61 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace CocRfidReader.Model
 {
-    public class Coc : IEqualityComparer<Coc>
+    public class Coc : IEqualityComparer<Coc>, INotifyPropertyChanged
     {
-        public int? PRODUKTIONSNR { get; set; }
-        public string? ItemNumber { get; set; }
-        public string? Name { get; set; }
-        public string? ItemText { get; set; }
+        private int? pRODUKTIONSNR;
+        private string? itemNumber;
+        private string? name;
+        private string? itemText;
+
+        public int? PRODUKTIONSNR
+        {
+            get => pRODUKTIONSNR; set
+            {
+                pRODUKTIONSNR = value;
+                RaisePropertyChanged(nameof(PRODUKTIONSNR));
+            }
+        }
+        public string? ItemNumber
+        {
+            get => itemNumber; set
+            {
+                itemNumber = value;
+                RaisePropertyChanged(nameof(ItemNumber));
+            }
+        }
+        public string? Name
+        {
+            get => name; set
+            {
+                name = value;
+                RaisePropertyChanged(nameof(Name));
+            }
+        }
+        public string? ItemText
+        {
+            get => itemText; set
+            {
+                itemText = value;
+                RaisePropertyChanged(nameof(ItemText));
+            }
+        }
         public string? EPC { get; set; }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         public override bool Equals(object? obj)
         {
             if (obj != null && obj is Coc coc)
-                return coc.Equals(this);
+                return Equals(this, coc);
             else return false;
         }
 
@@ -49,6 +86,11 @@ namespace CocRfidReader.Model
         public override string ToString()
         {
             return $"{PRODUKTIONSNR} | {Name} | {ItemNumber} {ItemText}";
+        }
+
+        private void RaisePropertyChanged([CallerMemberName] string name = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
     }
 }
