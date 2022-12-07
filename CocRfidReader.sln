@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32901.215
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CocRfidReader", "CocRfidReader\CocRfidReader.csproj", "{2E23141C-78D9-4F11-9665-1077417232D1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CocRfidReader", "CocRfidReader\CocRfidReader.csproj", "{2E23141C-78D9-4F11-9665-1077417232D1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CocRfidReader.Console", "CocRfidReader.Console\CocRfidReader.Console.csproj", "{8B089E39-AB16-4CA2-B7C8-7D9929B13CBE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{2E23141C-78D9-4F11-9665-1077417232D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2E23141C-78D9-4F11-9665-1077417232D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2E23141C-78D9-4F11-9665-1077417232D1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B089E39-AB16-4CA2-B7C8-7D9929B13CBE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B089E39-AB16-4CA2-B7C8-7D9929B13CBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B089E39-AB16-4CA2-B7C8-7D9929B13CBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B089E39-AB16-4CA2-B7C8-7D9929B13CBE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

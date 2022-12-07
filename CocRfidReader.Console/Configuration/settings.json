@@ -1,0 +1,11 @@
+{
+  "readerIP": "172.25.194.93",
+  "readerTimeOut": 6000,
+  "readerReadTime": 20000,
+  "enabledAntennas": 2,
+  "antena1Power": 20,
+  "antena2Power": 20,
+  "antena3Power": 20,
+  "antena4Power": 20,
+  "connectionString": ""
+}
