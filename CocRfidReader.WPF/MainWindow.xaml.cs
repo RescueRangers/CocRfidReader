@@ -27,6 +27,25 @@ namespace CocRfidReader.WPF
             this.viewModel = viewModel;
             DataContext = viewModel;
             InitializeComponent();
+
+            PackingListTextBox.Focus();
+        }
+
+        private bool IsDigit(string text)
+        {
+            return int.TryParse(text, out var _);
+        }
+
+        private void PackingListTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            if (IsDigit(e.Text))
+            {
+                e.Handled = false;
+            }
+            else
+            {
+                e.Handled = true;
+            }
         }
     }
 }

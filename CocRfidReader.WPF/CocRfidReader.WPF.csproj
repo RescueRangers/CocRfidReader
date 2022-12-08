@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0" />
     <PackageReference Include="ConcurrentObservableCollections" Version="1.1.9" />
     <PackageReference Include="Elastic.CommonSchema.Serilog" Version="1.5.3" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
@@ -46,6 +47,10 @@
       <DependentUpon>settings.json</DependentUpon>
       <IsTransformFile>true</IsTransformFile>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Utility\" />
   </ItemGroup>
 
 </Project>

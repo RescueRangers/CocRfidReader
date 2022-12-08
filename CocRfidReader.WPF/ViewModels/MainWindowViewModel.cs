@@ -2,14 +2,19 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
+using System.Windows;
+using System.Windows.Media;
 using CocRfidReader.Model;
 using CocRfidReader.Services;
 using CocRfidReader.WPF.Services;
+using CommunityToolkit.Mvvm.Input;
 using ConcurrentObservableCollections.ConcurrentObservableDictionary;
 using Impinj.OctaneSdk;
 using Microsoft.Extensions.Configuration;
@@ -23,16 +28,21 @@ namespace CocRfidReader.WPF.ViewModels
         private CocReader cocReader;
         private IConfiguration configuration;
         private ILogger<MainWindowViewModel>? logger;
-        private ServiceProvider? serviceProvider;
         private IMessagingService? messagingService;
+        private PacklisteReader packlisteReader;
+        private Timer timer = new();
 
-        private ImpinjReader reader;
+        private ImpinjReader? reader;
         private ConcurrentObservableDictionary<string, Tag> tags = new();
-        private ObservableCollection<Coc?> cocs;
+        private ObservableCollection<CocViewModel> cocs = new();
+        private string packingList;
+        private ObservableCollection<CocViewModel> expectedCocs = new();
+        private int timerLength = 1;
+        private int timerValue;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        public ObservableCollection<Coc?> Cocs
+        public ObservableCollection<CocViewModel> Cocs
         {
             get => cocs;
             set
@@ -42,36 +52,94 @@ namespace CocRfidReader.WPF.ViewModels
             }
         }
 
-        public MainWindowViewModel(CocReader cocReader, ReaderService readerService, IConfiguration configuration, ILogger<MainWindowViewModel>? logger = null, ServiceProvider serviceProvider = null, IMessagingService? messagingService = null)
+        public ObservableCollection<CocViewModel> ExpectedCocs
         {
-            Cocs = new();
-
-            Cocs.Add(new Coc
+            get => expectedCocs;
+            set
             {
-                PRODUKTIONSNR = 59437,
-                ItemNumber = "A9B1067899",
-                Name = "Dupa",
-                ItemText = "Mamma Mia!"
-            });
+                expectedCocs = value;
+                RaisePropertyChanged(nameof(ExpectedCocs));
+            }
+        }
 
+        public string PackingList
+        {
+            get => packingList;
+            set
+            {
+                packingList = value;
+                RaisePropertyChanged(nameof(PackingList));
+            }
+        }
+
+        public int TimerLength
+        {
+            get => timerLength;
+            set
+            {
+                timerLength = value;
+                RaisePropertyChanged(nameof(TimerLength));
+            }
+        }
+
+        public int TimerValue
+        {
+            get => timerValue;
+            set
+            {
+                timerValue = value;
+                RaisePropertyChanged(nameof(TimerValue));
+            }
+        }
+
+        public IAsyncRelayCommand StartReadCommand { get; private set; }
+
+        public MainWindowViewModel
+            (CocReader cocReader,
+            PacklisteReader packlisteReader,
+            ReaderService readerService,
+            IConfiguration configuration,
+            ILogger<MainWindowViewModel>? logger = null,
+            IMessagingService? messagingService = null)
+        {
             this.cocReader = cocReader;
             this.configuration = configuration;
-            this.serviceProvider = serviceProvider;
             tags.CollectionChanged += Tags_CollectionChanged;
             this.logger = logger;
             this.messagingService = messagingService;
+            this.packlisteReader = packlisteReader;
+            
+            ConfigureReader(readerService);
+            ConfiureTimer();
 
+            StartReadCommand = new AsyncRelayCommand(StartRead, () => CanRead());
+        }
+
+        private void ConfigureReader(ReaderService readerService)
+        {
             try
             {
                 reader = readerService.Reader;
                 reader.TagsReported += Reader_TagsReported;
-                StartRead();
             }
             catch (Exception ex)
             {
                 logger?.LogError(ex.Message);
-                messagingService.DisplayMessage(ex.Message, MessageType.Error);
+                messagingService?.DisplayMessage(ex.Message, MessageType.Error);
             }
+        }
+
+        private void ConfiureTimer()
+        {
+            timer.Interval = 1000;
+            timer.AutoReset = true;
+            timer.Elapsed += Timer_Elapsed;
+        }
+
+        private bool CanRead()
+        {
+            return true;
+            //return reader != null && reader.IsConnected;
         }
 
         private async void Tags_CollectionChanged(object? sender, DictionaryChangedEventArgs<string, Tag> e)
@@ -81,36 +149,27 @@ namespace CocRfidReader.WPF.ViewModels
                 try
                 {
                     var epcValue = e.NewValue.Epc.ToHexString();
-                    logger?.LogInformation($"Tag added with epc: {e.NewValue.Epc}");
-                    if (epcValue.StartsWith("888"))
+                    logger?.LogInformation("Getting COC from the database");
+                    var coc = await cocReader.GetAsync(epcValue);
+
+                    if (coc == null) return;
+
+                    logger?.LogInformation($"Database returned: {coc}");
+                    var cocVM = new CocViewModel(coc);
+                    cocVM.BackgroundBrush.Freeze();
+
+                    if (ExpectedCocs.Contains(cocVM)) cocVM.BackgroundBrush = Brushes.Green;
+                    else cocVM.BackgroundBrush = Brushes.Red;
+
+                    await App.Current.Dispatcher.BeginInvoke(() =>
                     {
-                        logger?.LogInformation("Getting COC from the database");
-                        var coc = await cocReader.GetAsync(epcValue);
-
-                        if (coc == null) return;
-
-                        logger?.LogInformation($"Database returned: {coc}");
-
-                        App.Current.Dispatcher.Invoke(() =>
-                        {
-                            Cocs.Add(coc);
-                        });
-                    }
-                    //else if (epcValue.StartsWith("777"))
-                    //{
-                    //    logger?.LogInformation("Getting Item from the database");
-                    //    var item = await itemReader.GetAsync(epcValue);
-
-                    //    if (item == null) return;
-
-                    //    logger?.LogInformation($"Database returned {item.ItemNumber}");
-                    //    items.TryAdd(epcValue, item);
-                    //}
+                        Cocs.Add(cocVM);
+                    });
                 }
                 catch (Exception ex)
                 {
                     logger?.LogError(ex.Message);
-                    serviceProvider?.GetService<IMessagingService>().DisplayMessage(ex.Message, MessageType.Error);
+                    messagingService?.DisplayMessage(ex.Message, MessageType.Error);
                 }
             }
         }
@@ -130,10 +189,53 @@ namespace CocRfidReader.WPF.ViewModels
             }
         }
 
-        private void StartRead()
+        private void Timer_Elapsed(object? sender, ElapsedEventArgs e)
         {
-            Cocs.Clear();
-            reader.Start();
+            TimerValue -= 1;
+            if (TimerValue <= 0)
+            {
+                timer.Stop();
+                reader?.Stop();
+            }
+        }
+
+
+        private async Task StartRead()
+        {
+            if (string.IsNullOrWhiteSpace(PackingList))
+            {
+                return;
+            }
+
+            try
+            {
+                await GetExpectedCocs();
+                StartReadTimer();
+
+                reader?.Stop();
+                Cocs.Clear();
+                reader?.Start();
+            }
+            catch (Exception ex)
+            {
+                logger?.LogError(ex.Message);
+                messagingService?.DisplayMessage(ex.Message, MessageType.Error);
+            }
+
+        }
+
+        private void StartReadTimer()
+        {
+            TimerLength = configuration.GetValue<int>("readerReadTime") / 1000;
+            TimerValue = TimerLength;
+            timer.Start();
+        }
+
+        private async Task GetExpectedCocs()
+        {
+            var expectedCocs = await packlisteReader.GetCocs(PackingList);
+            var cocs = expectedCocs.Select(c => new CocViewModel(c));
+            ExpectedCocs = new ObservableCollection<CocViewModel>(cocs);
         }
     }
 }
