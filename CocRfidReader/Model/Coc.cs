@@ -9,48 +9,18 @@ using System.Threading.Tasks;
 
 namespace CocRfidReader.Model
 {
-    public class Coc : IEqualityComparer<Coc>, INotifyPropertyChanged
+    public class Coc : IEqualityComparer<Coc>
     {
         private int? pRODUKTIONSNR;
         private string? itemNumber;
         private string? name;
         private string? itemText;
 
-        public int? PRODUKTIONSNR
-        {
-            get => pRODUKTIONSNR; set
-            {
-                pRODUKTIONSNR = value;
-                RaisePropertyChanged(nameof(PRODUKTIONSNR));
-            }
-        }
-        public string? ItemNumber
-        {
-            get => itemNumber; set
-            {
-                itemNumber = value;
-                RaisePropertyChanged(nameof(ItemNumber));
-            }
-        }
-        public string? Name
-        {
-            get => name; set
-            {
-                name = value;
-                RaisePropertyChanged(nameof(Name));
-            }
-        }
-        public string? ItemText
-        {
-            get => itemText; set
-            {
-                itemText = value;
-                RaisePropertyChanged(nameof(ItemText));
-            }
-        }
+        public int? PRODUKTIONSNR { get; set; }
+        public string? ItemNumber { get; set; }
+        public string? Name { get; set; }
+        public string? ItemText { get; set; }
         public string? EPC { get; set; }
-
-        public event PropertyChangedEventHandler? PropertyChanged;
 
         public override bool Equals(object? obj)
         {
@@ -62,7 +32,7 @@ namespace CocRfidReader.Model
         public bool Equals(Coc? x, Coc? y)
         {
             if (x == null || y == null) return false;
-            if (string.Equals(x.EPC, y.EPC, StringComparison.OrdinalIgnoreCase) && x.PRODUKTIONSNR == y.PRODUKTIONSNR)
+            if (x.PRODUKTIONSNR == y.PRODUKTIONSNR)
                 return true;
             return false;
         }
@@ -77,7 +47,6 @@ namespace CocRfidReader.Model
             var hash = 17;
             unchecked
             {
-                hash *= 23 + (EPC?.GetHashCode() ?? 0);
                 hash *= 23 + (PRODUKTIONSNR?.GetHashCode() ?? 0);
             }
             return hash;
@@ -86,11 +55,6 @@ namespace CocRfidReader.Model
         public override string ToString()
         {
             return $"{PRODUKTIONSNR} | {Name} | {ItemNumber} {ItemText}";
-        }
-
-        private void RaisePropertyChanged([CallerMemberName] string name = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
     }
 }
