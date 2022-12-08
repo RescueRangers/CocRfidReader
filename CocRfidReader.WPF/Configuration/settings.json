@@ -1,6 +1,6 @@
 {
   "readerIP": "172.25.194.93",
-  "readerTimeOut": 6000,
+  "readerTimeOut": 3000,
   "readerReadTime": 20000,
   "enabledAntennas": 2,
   "antena1Power": 20,
