@@ -67,7 +67,7 @@ namespace CocRfidReader.Services
                 settings.SearchMode = SearchMode.SingleTarget;
 
                 settings.AutoStart.Mode = AutoStartMode.None;
-                settings.AutoStop.Mode = AutoStopMode.Duration;
+                settings.AutoStop.Mode = AutoStopMode.None;
                 settings.AutoStop.DurationInMs = _readTime;
 
                 settings.Keepalives.Enabled = true;
