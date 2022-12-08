@@ -35,7 +35,7 @@ namespace CocRfidReader.WPF.ViewModels
         private ImpinjReader? reader;
         private ConcurrentObservableDictionary<string, Tag> tags = new();
         private ObservableCollection<CocViewModel> cocs = new();
-        private string packingList;
+        private string? packingList;
         private ObservableCollection<CocViewModel> expectedCocs = new();
         private int timerLength = 1;
         private int timerValue;
@@ -62,7 +62,7 @@ namespace CocRfidReader.WPF.ViewModels
             }
         }
 
-        public string PackingList
+        public string? PackingList
         {
             get => packingList;
             set
@@ -138,8 +138,7 @@ namespace CocRfidReader.WPF.ViewModels
 
         private bool CanRead()
         {
-            return true;
-            //return reader != null && reader.IsConnected;
+            return reader != null && reader.IsConnected;
         }
 
         private async void Tags_CollectionChanged(object? sender, DictionaryChangedEventArgs<string, Tag> e)
