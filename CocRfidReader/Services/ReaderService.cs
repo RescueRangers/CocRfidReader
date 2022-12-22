@@ -62,21 +62,20 @@ namespace CocRfidReader.Services
             {
                 var settings = Reader.QueryDefaultSettings();
 
-                settings.ReaderMode = ReaderMode.MaxMiller;
                 settings.Session = 2;
                 settings.SearchMode = SearchMode.SingleTarget;
 
                 settings.AutoStart.Mode = AutoStartMode.None;
                 settings.AutoStop.Mode = AutoStopMode.None;
-                settings.AutoStop.DurationInMs = _readTime;
 
                 settings.Keepalives.Enabled = true;
                 settings.Keepalives.PeriodInMs = 5000;
+                settings.SearchMode = SearchMode.SingleTarget;
 
                 settings.Keepalives.EnableLinkMonitorMode = true;
                 settings.Keepalives.LinkDownThreshold = 5;
-
-                settings.RfMode = 0;
+                var rfMode = configuration.GetValue("rfmode", 1000u);
+                settings.RfMode = rfMode;
 
                 var antennas = configuration.GetValue("enabledAntennas", 1);
 
