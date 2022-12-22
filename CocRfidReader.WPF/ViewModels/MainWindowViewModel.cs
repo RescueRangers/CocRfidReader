@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Windows.Media;
 using CocRfidReader.Services;
 using CocRfidReader.WPF.Services;
 using CommunityToolkit.Mvvm.Input;
@@ -21,12 +23,10 @@ namespace CocRfidReader.WPF.ViewModels
         private IMessagingService? messagingService;
         private PacklisteReader packlisteReader;
         private IAccountsService accountsService;
+        private MediaPlayer klaxonSound = new();
 
         private ImpinjReader? reader;
         private ConcurrentObservableDictionary<string, Tag> tags = new();
-        private string? packingList;
-        private int timerLength = 1;
-        private int timerValue;
         private CocsViewModel cocsViewModel;
         private ObservableCollection<AccountViewModel> accounts = new();
         private bool loadingStarted;
@@ -103,11 +103,22 @@ namespace CocRfidReader.WPF.ViewModels
             this.cocsViewModel = cocsViewModel;
             this.accountsService = accountsService;
             GetAccounts();
+
+            
         }
 
-        private Task FinishLoading()
+        private async Task FinishLoading()
         {
-            throw new NotImplementedException();
+            reader?.Stop();
+            LoadingStarted = false;
+            StartReadCommand.NotifyCanExecuteChanged();
+            InitializeCollections();
+        }
+
+        private void InitializeCollections()
+        {
+            tags.Clear();
+            CocsViewModel.Clear();
         }
 
         private async void GetAccounts()
@@ -130,14 +141,28 @@ namespace CocRfidReader.WPF.ViewModels
             }
         }
 
-        private void Reader_ConnectionLost(ImpinjReader reader)
-        {
-            StartReadCommand.NotifyCanExecuteChanged();
-        }
-
         private bool CanRead()
         {
             return reader != null && reader.IsConnected && !LoadingStarted && selectedAccount != null;
+        }
+
+        private async Task StartRead()
+        {
+            LoadingStarted = true;
+
+
+            try
+            {
+                reader?.Stop();
+                reader?.Start();
+                logger.LogInformation("Read started");
+
+            }
+            catch (Exception ex)
+            {
+                logger?.LogError(ex.Message);
+                messagingService?.DisplayMessage(ex.Message, MessageType.Error);
+            }
         }
 
         private async void Tags_CollectionChanged(object? sender, DictionaryChangedEventArgs<string, Tag> e)
@@ -153,9 +178,29 @@ namespace CocRfidReader.WPF.ViewModels
                     if (coc == null) return;
 
                     logger?.LogInformation($"Database returned: {coc}");
-                    var cocVM = new CocViewModel(coc);
-                    cocVM.BackgroundBrush.Freeze();
 
+                    var cocVM = new CocViewModel(coc);
+                    if (GetHammingDistance(coc.AccountNumber, SelectedAccount.AccountNumber) < 2)
+                    {
+                        cocVM.IsAccountCorrect = true;
+                    }
+                    else
+                    {
+                        await App.Current.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, () =>
+                        {
+                            klaxonSound.Open(new Uri(@".\Sounds\vuvuzela-37503.mp3", UriKind.Relative));
+                            klaxonSound.Play();
+                        });
+                    }
+
+                    //var cocVM = new CocViewModel(new Model.Coc
+                    //{
+                    //    PRODUKTIONSNR = 532390,
+                    //    ItemNumber = "A9B10383124",
+                    //    Name = "Siemens Gamesa Renewable Energ",
+                    //    ItemText = "Pre-cut Glass kit 1. PL1, B81-00"
+                    //});
+                    CocsViewModel.AddCoc(cocVM);
                 }
                 catch (Exception ex)
                 {
@@ -163,6 +208,21 @@ namespace CocRfidReader.WPF.ViewModels
                     messagingService?.DisplayMessage(ex.Message, MessageType.Error);
                 }
             }
+        }
+
+        private int GetHammingDistance(string s, string t)
+        {
+            if (s.Length != t.Length)
+            {
+                return 99;
+            }
+
+            int distance =
+                s.ToCharArray()
+                .Zip(t.ToCharArray(), (c1, c2) => new { c1, c2 })
+                .Count(m => m.c1 != m.c2);
+
+            return distance;
         }
 
         private void RaisePropertyChanged([CallerMemberName] string name = "")
@@ -180,21 +240,10 @@ namespace CocRfidReader.WPF.ViewModels
             }
         }
 
-        private async Task StartRead()
+        private void Reader_ConnectionLost(ImpinjReader reader)
         {
-            LoadingStarted = true;
-            
-
-            try
-            {
-                reader?.Stop();
-                reader?.Start();
-            }
-            catch (Exception ex)
-            {
-                logger?.LogError(ex.Message);
-                messagingService?.DisplayMessage(ex.Message, MessageType.Error);
-            }
+            StartReadCommand.NotifyCanExecuteChanged();
         }
+
     }
 }

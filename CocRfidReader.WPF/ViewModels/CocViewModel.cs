@@ -17,6 +17,7 @@ namespace CocRfidReader.WPF.ViewModels
         private string? name;
         private string? itemText;
         private string accountNumber;
+        private bool isAccountCorrect;
 
         public string AccountNumber
         {
@@ -63,8 +64,24 @@ namespace CocRfidReader.WPF.ViewModels
             }
         }
         public string? EPC { get; set; }
+        public bool IsAccountCorrect
+        {
+            get => isAccountCorrect;
+            set
+            {
+                isAccountCorrect = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(BackgroundBrush));
+            }
+        }
 
-        public Brush BackgroundBrush { get; set; } = (Brush)new BrushConverter().ConvertFromString("#FFDFE0DF");
+        public Brush BackgroundBrush
+        {
+            get
+            {
+                return IsAccountCorrect ? new SolidColorBrush(Color.FromRgb(51, 255, 51)) : new SolidColorBrush(Color.FromRgb(255, 51, 51));
+            }
+        }
 
         public CocViewModel(Coc coc)
         {

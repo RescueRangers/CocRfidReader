@@ -5,8 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
+using System.Windows.Threading;
 using CocRfidReader.Model;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 
@@ -17,32 +19,28 @@ namespace CocRfidReader.WPF.ViewModels
         public CocsViewModel(ILogger<CocsViewModel>? logger)
         {
             this.logger = logger;
-
-#if DEBUG
-            for (int i = 0; i < 118; i++)
-            {
-                var coc = new CocViewModel(new Coc
-                {
-                    PRODUKTIONSNR = 597631,
-                    ItemNumber = "A9B10331961",
-                    AccountNumber = "96313334" + $"_{i}",
-                    Name = "Precut LPS glass kit suction side CB"
-                });
-
-                if (i%5 == 0)
-                {
-                    coc.BackgroundBrush = Brushes.Red;
-                }
-
-                Cocs.Add(coc);
-            }
-#endif
             DeleteCocCommand = new RelayCommand(DeleteCoc);
+        }
+
+        public void AddCoc(CocViewModel coc)
+        {
+            App.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, ()=>
+            {
+                Cocs.Add(coc);
+            });
         }
 
         private void DeleteCoc()
         {
             Cocs.RemoveAt(SelectedCocIndex);
+        }
+
+        internal void Clear()
+        {
+            App.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, () =>
+            {
+                Cocs.Clear();
+            });
         }
 
         private ILogger<CocsViewModel>? logger;
