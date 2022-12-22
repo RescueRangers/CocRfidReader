@@ -40,7 +40,7 @@ SELECT TOP (1)
   ),
   account as (
   select top (1)
-  Account FROM [c5sql].[dbo].PRODORDRE where KUNDEORDRE = (SELECT p.KUNDEORDRE
+  Account as AccountNumber FROM [c5sql].[dbo].PRODORDRE where KUNDEORDRE = (SELECT p.KUNDEORDRE
               FROM [c5sql].[dbo].[PRODKART] p
               WHERE p.[DATASET] = 'DAT'
                      AND p.PRODUKTIONSNR = (select PRODUKTIONSNR from production)) 
