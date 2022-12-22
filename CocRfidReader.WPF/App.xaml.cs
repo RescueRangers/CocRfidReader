@@ -41,8 +41,8 @@ namespace CocRfidReader.WPF
             .AddLogging(b =>
             {
                 var logger = new LoggerConfiguration()
-                .WriteTo.Debug(new EcsTextFormatter(), Serilog.Events.LogEventLevel.Verbose)
-                .WriteTo.File(new EcsTextFormatter(), @".\logs\log.txt", Serilog.Events.LogEventLevel.Verbose, rollingInterval: RollingInterval.Day)
+                .WriteTo.Debug(new CompactJsonFormatter(), Serilog.Events.LogEventLevel.Verbose)
+                .WriteTo.File(new CompactJsonFormatter(), @".\logs\log.txt", Serilog.Events.LogEventLevel.Verbose, rollingInterval: RollingInterval.Day)
                 .CreateLogger();
 
                 b.AddSerilog(logger);
