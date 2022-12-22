@@ -64,7 +64,9 @@ namespace CocRfidReader.WPF
                 .AddSingleton<MainWindowViewModel>()
                 .AddSingleton<PacklisteReader>()
                 .AddTransient<MainWindow>()
-                .AddSingleton<IMessagingService, WpfMessagingService>();
+                .AddSingleton<CocsViewModel>()
+                .AddSingleton<IMessagingService, WpfMessagingService>()
+                .AddSingleton<IAccountsService, AccountsJsonService>();
 
         }
 

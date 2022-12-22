@@ -11,16 +11,12 @@ namespace CocRfidReader.Model
 {
     public class Coc : IEqualityComparer<Coc>
     {
-        private int? pRODUKTIONSNR;
-        private string? itemNumber;
-        private string? name;
-        private string? itemText;
-
         public int? PRODUKTIONSNR { get; set; }
         public string? ItemNumber { get; set; }
         public string? Name { get; set; }
         public string? ItemText { get; set; }
         public string? EPC { get; set; }
+        public string AccountNumber { get; set; }
 
         public override bool Equals(object? obj)
         {

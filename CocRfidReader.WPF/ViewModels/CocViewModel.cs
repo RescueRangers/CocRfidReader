@@ -16,7 +16,17 @@ namespace CocRfidReader.WPF.ViewModels
         private string? itemNumber;
         private string? name;
         private string? itemText;
+        private string accountNumber;
 
+        public string AccountNumber
+        {
+            get => accountNumber;
+            set
+            {
+                accountNumber = value;
+                OnPropertyChanged();
+            }
+        }
         public int? PRODUKTIONSNR
         {
             get => pRODUKTIONSNR;
@@ -43,13 +53,14 @@ namespace CocRfidReader.WPF.ViewModels
                 OnPropertyChanged();
             }
         }
-        public string? ItemText 
-        { 
-            get => itemText; 
-            set {
+        public string? ItemText
+        {
+            get => itemText;
+            set
+            {
                 itemText = value;
                 OnPropertyChanged();
-            } 
+            }
         }
         public string? EPC { get; set; }
 
@@ -62,6 +73,7 @@ namespace CocRfidReader.WPF.ViewModels
             Name = coc.Name;
             ItemText = coc.ItemText;
             EPC = coc.EPC;
+            AccountNumber = coc.AccountNumber;
         }
 
 

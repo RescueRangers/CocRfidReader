@@ -1,24 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading.Tasks;
-using System.Timers;
-using System.Windows;
-using System.Windows.Media;
-using CocRfidReader.Model;
 using CocRfidReader.Services;
 using CocRfidReader.WPF.Services;
 using CommunityToolkit.Mvvm.Input;
 using ConcurrentObservableCollections.ConcurrentObservableDictionary;
 using Impinj.OctaneSdk;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace CocRfidReader.WPF.ViewModels
@@ -30,75 +20,72 @@ namespace CocRfidReader.WPF.ViewModels
         private ILogger<MainWindowViewModel>? logger;
         private IMessagingService? messagingService;
         private PacklisteReader packlisteReader;
-        private Timer timer = new();
+        private IAccountsService accountsService;
 
         private ImpinjReader? reader;
         private ConcurrentObservableDictionary<string, Tag> tags = new();
-        private ObservableCollection<CocViewModel> cocs = new();
         private string? packingList;
-        private ObservableCollection<CocViewModel> expectedCocs = new();
         private int timerLength = 1;
         private int timerValue;
+        private CocsViewModel cocsViewModel;
+        private ObservableCollection<AccountViewModel> accounts = new();
+        private bool loadingStarted;
+        private AccountViewModel? selectedAccount;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        public ObservableCollection<CocViewModel> Cocs
+        public AccountViewModel? SelectedAccount
         {
-            get => cocs;
+            get => selectedAccount;
             set
             {
-                cocs = value;
-                RaisePropertyChanged(nameof(Cocs));
+                selectedAccount = value;
+                RaisePropertyChanged(nameof(SelectedAccount));
+                StartReadCommand.NotifyCanExecuteChanged();
+            }
+        }
+        public bool LoadingStarted
+        {
+            get => loadingStarted;
+            set
+            {
+                loadingStarted = value;
+                RaisePropertyChanged(nameof(LoadingStarted));
+                StartReadCommand.NotifyCanExecuteChanged();
+                FinishLoadingCommand.NotifyCanExecuteChanged();
             }
         }
 
-        public ObservableCollection<CocViewModel> ExpectedCocs
+        public CocsViewModel CocsViewModel
         {
-            get => expectedCocs;
+            get => cocsViewModel;
             set
             {
-                expectedCocs = value;
-                RaisePropertyChanged(nameof(ExpectedCocs));
+                cocsViewModel = value;
+                RaisePropertyChanged(nameof(CocsViewModel));
             }
         }
 
-        public string? PackingList
+        public ObservableCollection<AccountViewModel> Accounts
         {
-            get => packingList;
+            get => accounts;
             set
             {
-                packingList = value;
-                RaisePropertyChanged(nameof(PackingList));
-            }
-        }
-
-        public int TimerLength
-        {
-            get => timerLength;
-            set
-            {
-                timerLength = value;
-                RaisePropertyChanged(nameof(TimerLength));
-            }
-        }
-
-        public int TimerValue
-        {
-            get => timerValue;
-            set
-            {
-                timerValue = value;
-                RaisePropertyChanged(nameof(TimerValue));
+                accounts = value;
+                RaisePropertyChanged(nameof(Accounts));
             }
         }
 
         public IAsyncRelayCommand StartReadCommand { get; private set; }
+        public IAsyncRelayCommand FinishLoadingCommand { get; private set; }
 
         public MainWindowViewModel
             (CocReader cocReader,
             PacklisteReader packlisteReader,
             ReaderService readerService,
             IConfiguration configuration,
+            IAccountsService accountsService,
+            CocsViewModel cocsViewModel,
             ILogger<MainWindowViewModel>? logger = null,
             IMessagingService? messagingService = null)
         {
@@ -108,11 +95,24 @@ namespace CocRfidReader.WPF.ViewModels
             this.logger = logger;
             this.messagingService = messagingService;
             this.packlisteReader = packlisteReader;
-            
+
             ConfigureReader(readerService);
-            ConfiureTimer();
 
             StartReadCommand = new AsyncRelayCommand(StartRead, () => CanRead());
+            FinishLoadingCommand = new AsyncRelayCommand(FinishLoading, () => LoadingStarted);
+            this.cocsViewModel = cocsViewModel;
+            this.accountsService = accountsService;
+            GetAccounts();
+        }
+
+        private Task FinishLoading()
+        {
+            throw new NotImplementedException();
+        }
+
+        private async void GetAccounts()
+        {
+            accounts = new ObservableCollection<AccountViewModel>(await accountsService.GetAccounts());
         }
 
         private void ConfigureReader(ReaderService readerService)
@@ -121,6 +121,7 @@ namespace CocRfidReader.WPF.ViewModels
             {
                 reader = readerService.Reader;
                 reader.TagsReported += Reader_TagsReported;
+                reader.ConnectionLost += Reader_ConnectionLost;
             }
             catch (Exception ex)
             {
@@ -129,16 +130,14 @@ namespace CocRfidReader.WPF.ViewModels
             }
         }
 
-        private void ConfiureTimer()
+        private void Reader_ConnectionLost(ImpinjReader reader)
         {
-            timer.Interval = 1000;
-            timer.AutoReset = true;
-            timer.Elapsed += Timer_Elapsed;
+            StartReadCommand.NotifyCanExecuteChanged();
         }
 
         private bool CanRead()
         {
-            return reader != null && reader.IsConnected;
+            return reader != null && reader.IsConnected && !LoadingStarted && selectedAccount != null;
         }
 
         private async void Tags_CollectionChanged(object? sender, DictionaryChangedEventArgs<string, Tag> e)
@@ -157,13 +156,6 @@ namespace CocRfidReader.WPF.ViewModels
                     var cocVM = new CocViewModel(coc);
                     cocVM.BackgroundBrush.Freeze();
 
-                    if (ExpectedCocs.Contains(cocVM)) cocVM.BackgroundBrush = Brushes.Green;
-                    else cocVM.BackgroundBrush = Brushes.Red;
-
-                    await App.Current.Dispatcher.BeginInvoke(() =>
-                    {
-                        Cocs.Add(cocVM);
-                    });
                 }
                 catch (Exception ex)
                 {
@@ -188,31 +180,14 @@ namespace CocRfidReader.WPF.ViewModels
             }
         }
 
-        private void Timer_Elapsed(object? sender, ElapsedEventArgs e)
-        {
-            TimerValue -= 1;
-            if (TimerValue <= 0)
-            {
-                timer.Stop();
-                reader?.Stop();
-            }
-        }
-
-
         private async Task StartRead()
         {
-            if (string.IsNullOrWhiteSpace(PackingList))
-            {
-                return;
-            }
+            LoadingStarted = true;
+            
 
             try
             {
-                await GetExpectedCocs();
-                StartReadTimer();
-
                 reader?.Stop();
-                Cocs.Clear();
                 reader?.Start();
             }
             catch (Exception ex)
@@ -220,21 +195,6 @@ namespace CocRfidReader.WPF.ViewModels
                 logger?.LogError(ex.Message);
                 messagingService?.DisplayMessage(ex.Message, MessageType.Error);
             }
-
-        }
-
-        private void StartReadTimer()
-        {
-            TimerLength = configuration.GetValue<int>("readerReadTime") / 1000;
-            TimerValue = TimerLength;
-            timer.Start();
-        }
-
-        private async Task GetExpectedCocs()
-        {
-            var expectedCocs = await packlisteReader.GetCocs(PackingList);
-            var cocs = expectedCocs.Select(c => new CocViewModel(c));
-            ExpectedCocs = new ObservableCollection<CocViewModel>(cocs);
         }
     }
 }

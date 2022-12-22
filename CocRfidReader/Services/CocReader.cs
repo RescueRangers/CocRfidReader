@@ -28,6 +28,7 @@ namespace CocRfidReader.Services
             {
                 using var sql = new SqlConnection(configuration.GetValue<string>("connectionString"));
                 return await sql.QueryFirstOrDefaultAsync<Coc>(@"
+with production as (
 SELECT TOP (1) 
       A.[PRODUKTIONSNR]
 	  ,B.ItemNumber
@@ -35,7 +36,17 @@ SELECT TOP (1)
 	  ,B.ItemText
   FROM [Prosign_ItemControl].[dbo].[TagCoc] A
   INNER JOIN [Prosign_ItemControl].[dbo].[CocPrintQueueLog] B on A.PRODUKTIONSNR = B.PRODUKTIONSNR
-  WHERE EPC = @EPC", new { EPC = epc });
+  WHERE EPC = @EPC
+  ),
+  account as (
+  select top (1)
+  Account FROM [c5sql].[dbo].PRODORDRE where KUNDEORDRE = (SELECT p.KUNDEORDRE
+              FROM [c5sql].[dbo].[PRODKART] p
+              WHERE p.[DATASET] = 'DAT'
+                     AND p.PRODUKTIONSNR = (select PRODUKTIONSNR from production)) 
+  )
+  SELECT * from production, account
+", new { EPC = epc });
 
             }
             catch (Exception ex)
