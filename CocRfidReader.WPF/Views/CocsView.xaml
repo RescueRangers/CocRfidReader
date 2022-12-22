@@ -15,9 +15,10 @@
                 <Setter Property="TextTrimming" Value="None" />
                 <Setter Property="FontSize" Value="22" />
                 <Setter Property="FontFamily" Value="Verdana" />
+                <Setter Property="Foreground" Value="AliceBlue"/>
             </Style>
             <Style x:Key="HeaderBorder" TargetType="{x:Type Border}">
-                <Setter Property="Background" Value="LightGreen" />
+                <Setter Property="Background" Value="DimGray" />
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
