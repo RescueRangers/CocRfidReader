@@ -51,6 +51,9 @@
       <DependentUpon>settings.json</DependentUpon>
       <IsTransformFile>true</IsTransformFile>
     </None>
+    <None Update="Sounds\vuvuzela-37503.mp3">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
