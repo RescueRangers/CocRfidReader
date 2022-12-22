@@ -62,7 +62,7 @@ namespace CocRfidReader.Services
             {
                 var settings = Reader.QueryDefaultSettings();
 
-                settings.Session = 2;
+                settings.Session = configuration.GetValue<ushort>("session", 2);
                 settings.SearchMode = SearchMode.SingleTarget;
 
                 settings.AutoStart.Mode = AutoStartMode.None;
