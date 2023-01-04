@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Media;
@@ -12,6 +14,8 @@ using ConcurrentObservableCollections.ConcurrentObservableDictionary;
 using Impinj.OctaneSdk;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SendGrid;
+using SendGrid.Helpers.Mail;
 
 namespace CocRfidReader.WPF.ViewModels
 {
@@ -24,6 +28,7 @@ namespace CocRfidReader.WPF.ViewModels
         private PacklisteReader packlisteReader;
         private IAccountsService accountsService;
         private MediaPlayer klaxonSound = new();
+        private ISendGridClient sendGridClient;
 
         private ImpinjReader? reader;
         private ConcurrentObservableDictionary<string, Tag> tags = new();
@@ -85,6 +90,7 @@ namespace CocRfidReader.WPF.ViewModels
             ReaderService readerService,
             IConfiguration configuration,
             IAccountsService accountsService,
+            ISendGridClient sendGridClient,
             CocsViewModel cocsViewModel,
             ILogger<MainWindowViewModel>? logger = null,
             IMessagingService? messagingService = null)
@@ -103,8 +109,7 @@ namespace CocRfidReader.WPF.ViewModels
             this.cocsViewModel = cocsViewModel;
             this.accountsService = accountsService;
             GetAccounts();
-
-            
+            this.sendGridClient = sendGridClient;
         }
 
         private async Task FinishLoading()
@@ -112,7 +117,145 @@ namespace CocRfidReader.WPF.ViewModels
             reader?.Stop();
             LoadingStarted = false;
             StartReadCommand.NotifyCanExecuteChanged();
+
+            var notifyEmails = configuration.GetSection("notifyAddresses").Get<string[]>();
+            var ccEmails = configuration.GetSection("ccAddresses").Get<string[]>();
+
+            var file = await SaveCocsToTemp();
+
+            if (notifyEmails == null || !notifyEmails.Any())
+            {
+                messagingService?.DisplayMessage("Nie skonfigurowano żadnego adresu email.\n\rCOC zostaną zapisane w pliku tekstowym w głównym folderze programu.", MessageType.Info);
+                SaveCocsLocally(file);
+            }
+            else
+            {
+                var response = await SendCocsByEmail(notifyEmails, ccEmails, file);
+                await ProcessSendGridResponse(response, file);
+            }
+            ClearTemp();
             InitializeCollections();
+        }
+
+        private void ClearTemp()
+        {
+            var directory = new DirectoryInfo(@".\Temp");
+            foreach (var file in directory.GetFiles())
+            {
+                file.Delete();
+            }
+        }
+
+        private async Task ProcessSendGridResponse(Response? response, string file)
+        {
+            if (response != null && !response.IsSuccessStatusCode)
+            {
+                var responseMessage = await response.Body.ReadAsStringAsync();
+                messagingService?.DisplayMessage($"{responseMessage}\r\n\r\nPlik został zapisany w głównym folderze programu", MessageType.Error);
+                logger?.LogWarning(responseMessage);
+                SaveCocsLocally(file);
+            }
+            else messagingService?.DisplayMessage("Wiadomość wysłana.", MessageType.Info);
+        }
+
+        private async Task<string> SaveCocsToTemp()
+        {
+            try
+            {
+                var directory = new DirectoryInfo(@".\Temp");
+                if (!directory.Exists) directory.Create();
+
+                var fileName = $@".\Temp\COC_{DateTime.Now:yyyy-MM-dd_hhmmss}.txt";
+                using (var file = new FileInfo(fileName).CreateText())
+                {
+                    foreach (var coc in CocsViewModel.Cocs)
+                    {
+                        await file.WriteLineAsync($"L;{DateTime.Now:yyyyMMddhhmmss};{coc.PRODUKTIONSNR}");
+                    }
+                    await file.FlushAsync();
+                }
+                return fileName;
+            }
+            catch (Exception ex)
+            {
+                logger?.LogError(ex.Message);
+                throw;
+            }
+        }
+
+        private void SaveCocsLocally(string file)
+        {
+            try
+            {
+                var fileInfo = new FileInfo(file);
+                fileInfo.CopyTo(fileInfo.Name);
+            }
+            catch (Exception ex)
+            {
+                logger?.LogError(ex.Message);
+                throw;
+            }
+            
+        }
+
+        private async Task<Response?> SendCocsByEmail(string[] notifyEmails, string[]? ccEmails, string file)
+        {
+            if (SelectedAccount == null) return new Response(System.Net.HttpStatusCode.ExpectationFailed, new StringContent("Nie zaznaczono konta klienta."), null);
+            try
+            {
+                var msg = new SendGridMessage()
+                {
+                    From = new EmailAddress(configuration.GetValue<string>("fromAddress"), "Coc skaner na rampa1"),
+                    Subject = "Nowy załadunek"
+                };
+
+                await AddMessageContent(file, msg);
+
+                PopulateToField(notifyEmails, msg);
+
+                if (ccEmails != null && ccEmails.Any())
+                {
+                    PopulateCCField(ccEmails, msg);
+                }
+
+                return await sendGridClient.SendEmailAsync(msg);
+            }
+            catch (Exception ex)
+            {
+                logger?.LogError(ex.Message);
+                throw;
+            }
+        }
+
+        private async Task AddMessageContent(string file, SendGridMessage msg)
+        {
+            msg.AddContent(MimeType.Text, $@"Na rampie 1 skończono załadunek do:
+Nazwa: {SelectedAccount.AccountName};
+Numer konta: {SelectedAccount.AccountNumber};
+Adres: {SelectedAccount.ZipCity}
+
+Numery COC znajdują się w załączniku do tej wiadomości.");
+
+            using (var fileStream = File.OpenRead(file))
+            {
+                await msg.AddAttachmentAsync("COC.txt", fileStream);
+            }
+        }
+
+        private static void PopulateToField(string[] notifyEmails, SendGridMessage msg)
+        {
+            foreach (var email in notifyEmails)
+            {
+                msg.AddTo(new EmailAddress(email));
+            }
+        }
+
+        private static void PopulateCCField(string[]? ccEmails, SendGridMessage msg)
+        {
+            foreach (var cc in ccEmails)
+            {
+                msg.AddCc(new EmailAddress(cc));
+            }
         }
 
         private void InitializeCollections()
