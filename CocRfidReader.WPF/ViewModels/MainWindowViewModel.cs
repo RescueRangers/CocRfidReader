@@ -150,12 +150,11 @@ namespace CocRfidReader.WPF.ViewModels
         {
             LoadingStarted = true;
 
-
             try
             {
                 reader?.Stop();
                 reader?.Start();
-                logger.LogInformation("Read started");
+                logger?.LogInformation("Read started");
 
             }
             catch (Exception ex)
@@ -175,7 +174,11 @@ namespace CocRfidReader.WPF.ViewModels
                     logger?.LogInformation("Getting COC from the database");
                     var coc = await cocReader.GetAsync(epcValue);
 
-                    if (coc == null) return;
+                    if (coc == null)
+                    {
+                        logger?.LogWarning($"Could not get coc number from EPC: {epcValue}");
+                        return;
+                    }
 
                     logger?.LogInformation($"Database returned: {coc}");
 
@@ -193,13 +196,6 @@ namespace CocRfidReader.WPF.ViewModels
                         });
                     }
 
-                    //var cocVM = new CocViewModel(new Model.Coc
-                    //{
-                    //    PRODUKTIONSNR = 532390,
-                    //    ItemNumber = "A9B10383124",
-                    //    Name = "Siemens Gamesa Renewable Energ",
-                    //    ItemText = "Pre-cut Glass kit 1. PL1, B81-00"
-                    //});
                     CocsViewModel.AddCoc(cocVM);
                 }
                 catch (Exception ex)

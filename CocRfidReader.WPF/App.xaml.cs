@@ -13,6 +13,7 @@ using Serilog;
 using CocRfidReader.WPF.ViewModels;
 using CocRfidReader.WPF.Services;
 using Elastic.CommonSchema.Serilog;
+using SendGrid.Extensions.DependencyInjection;
 
 namespace CocRfidReader.WPF
 {
@@ -66,8 +67,11 @@ namespace CocRfidReader.WPF
                 .AddTransient<MainWindow>()
                 .AddSingleton<CocsViewModel>()
                 .AddSingleton<IMessagingService, WpfMessagingService>()
-                .AddSingleton<IAccountsService, AccountsJsonService>();
-
+                .AddSingleton<IAccountsService, AccountsJsonService>()
+                .AddSendGrid(options =>
+                {
+                    options.ApiKey = configuration.GetValue<string>("sendGridAPI");
+                });
         }
 
         private void OnStartup(object sender, StartupEventArgs e)
