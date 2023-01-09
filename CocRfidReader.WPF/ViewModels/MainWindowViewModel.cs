@@ -29,6 +29,7 @@ namespace CocRfidReader.WPF.ViewModels
         private IAccountsService accountsService;
         private MediaPlayer klaxonSound = new();
         private ISendGridClient sendGridClient;
+        private ReaderService readerService;
 
         private ImpinjReader? reader;
         private ConcurrentObservableDictionary<string, Tag> tags = new();
@@ -36,6 +37,8 @@ namespace CocRfidReader.WPF.ViewModels
         private ObservableCollection<AccountViewModel> accounts = new();
         private bool loadingStarted;
         private AccountViewModel? selectedAccount;
+        private bool connecting;
+        private bool connected;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -71,6 +74,33 @@ namespace CocRfidReader.WPF.ViewModels
             }
         }
 
+        public bool Connecting
+        {
+            get => connecting;
+            set
+            {
+                connecting = value;
+                RaisePropertyChanged(nameof(Connecting));
+            }
+        }
+
+        public bool Connected
+        {
+            get => connected; 
+            set
+            {
+                connected = value;
+                RaisePropertyChanged(nameof(Connected));
+                RaisePropertyChanged(nameof(ConnectionButtonText));
+                App.Current.Dispatcher.Invoke(() => StartReadCommand.NotifyCanExecuteChanged());
+            }
+        }
+
+        public string ConnectionButtonText
+        {
+            get => Connected ? "Odłącz" : "Połącz";
+        }
+
         public ObservableCollection<AccountViewModel> Accounts
         {
             get => accounts;
@@ -83,6 +113,7 @@ namespace CocRfidReader.WPF.ViewModels
 
         public IAsyncRelayCommand StartReadCommand { get; private set; }
         public IAsyncRelayCommand FinishLoadingCommand { get; private set; }
+        public IRelayCommand ConnectionToggleCommand { get; set; }
 
         public MainWindowViewModel
             (CocReader cocReader,
@@ -101,15 +132,82 @@ namespace CocRfidReader.WPF.ViewModels
             this.logger = logger;
             this.messagingService = messagingService;
             this.packlisteReader = packlisteReader;
-
-            ConfigureReader(readerService);
-
-            StartReadCommand = new AsyncRelayCommand(StartRead, () => CanRead());
-            FinishLoadingCommand = new AsyncRelayCommand(FinishLoading, () => LoadingStarted);
+            this.readerService = readerService;
             this.cocsViewModel = cocsViewModel;
             this.accountsService = accountsService;
-            GetAccounts();
             this.sendGridClient = sendGridClient;
+
+            GetAccounts();
+            SetUpCommands();
+        }
+
+        private void SetUpCommands()
+        {
+            StartReadCommand = new AsyncRelayCommand(StartRead, () => CanRead());
+            ConnectionToggleCommand = new RelayCommand(() => ToggleConnection(readerService));
+            FinishLoadingCommand = new AsyncRelayCommand(FinishLoading, () => LoadingStarted);
+        }
+
+        private async Task StartRead()
+        {
+            LoadingStarted = true;
+
+            try
+            {
+                reader?.Stop();
+                reader?.Start();
+                logger?.LogInformation("Read started");
+
+            }
+            catch (Exception ex)
+            {
+                logger?.LogError(ex.Message);
+                messagingService?.DisplayMessage(ex.Message, MessageType.Error);
+            }
+        }
+
+        private bool CanRead()
+        {
+            return reader != null && reader.IsConnected && !LoadingStarted && selectedAccount != null;
+        }
+
+        private void ToggleConnection(ReaderService readerService)
+        {
+            Connecting = true;
+            Task task = Task.Run((Action)DoConnect);
+            
+        }
+
+        private void DoConnect()
+        {
+            try
+            {
+                if (!Connected)
+                {
+                    reader = readerService.Connect();
+                    reader.TagsReported += Reader_TagsReported;
+                    reader.ConnectionLost += Reader_ConnectionLost;
+                    Connecting = false;
+                    Connected = true;
+                }
+                else
+                {
+                    reader.Disconnect();
+                    reader.TagsReported -= Reader_TagsReported;
+                    reader.ConnectionLost -= Reader_ConnectionLost;
+                    Connecting = false;
+                    Connected = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger?.LogError(ex.Message);
+                messagingService?.DisplayMessage(ex.Message, MessageType.Error);
+                Connecting = false;
+                Connected = false;
+                return;
+            }
+            
         }
 
         private async Task FinishLoading()
@@ -118,6 +216,13 @@ namespace CocRfidReader.WPF.ViewModels
             LoadingStarted = false;
             StartReadCommand.NotifyCanExecuteChanged();
 
+            if (CocsViewModel.Cocs.Any()) await SaveCocsAndNotify();
+
+            InitializeCollections();
+        }
+
+        private async Task SaveCocsAndNotify()
+        {
             var notifyEmails = configuration.GetSection("notifyAddresses").Get<string[]>();
             var ccEmails = configuration.GetSection("ccAddresses").Get<string[]>();
 
@@ -134,7 +239,6 @@ namespace CocRfidReader.WPF.ViewModels
                 await ProcessSendGridResponse(response, file);
             }
             ClearTemp();
-            InitializeCollections();
         }
 
         private void ClearTemp()
@@ -195,7 +299,7 @@ namespace CocRfidReader.WPF.ViewModels
                 logger?.LogError(ex.Message);
                 throw;
             }
-            
+
         }
 
         private async Task<Response?> SendCocsByEmail(string[] notifyEmails, string[]? ccEmails, string file)
@@ -267,44 +371,6 @@ Numery COC znajdują się w załączniku do tej wiadomości.");
         private async void GetAccounts()
         {
             accounts = new ObservableCollection<AccountViewModel>(await accountsService.GetAccounts());
-        }
-
-        private void ConfigureReader(ReaderService readerService)
-        {
-            try
-            {
-                reader = readerService.Reader;
-                reader.TagsReported += Reader_TagsReported;
-                reader.ConnectionLost += Reader_ConnectionLost;
-            }
-            catch (Exception ex)
-            {
-                logger?.LogError(ex.Message);
-                messagingService?.DisplayMessage(ex.Message, MessageType.Error);
-            }
-        }
-
-        private bool CanRead()
-        {
-            return reader != null && reader.IsConnected && !LoadingStarted && selectedAccount != null;
-        }
-
-        private async Task StartRead()
-        {
-            LoadingStarted = true;
-
-            try
-            {
-                reader?.Stop();
-                reader?.Start();
-                logger?.LogInformation("Read started");
-
-            }
-            catch (Exception ex)
-            {
-                logger?.LogError(ex.Message);
-                messagingService?.DisplayMessage(ex.Message, MessageType.Error);
-            }
         }
 
         private async void Tags_CollectionChanged(object? sender, DictionaryChangedEventArgs<string, Tag> e)
@@ -381,7 +447,12 @@ Numery COC znajdują się w załączniku do tej wiadomości.");
 
         private void Reader_ConnectionLost(ImpinjReader reader)
         {
-            StartReadCommand.NotifyCanExecuteChanged();
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                StartReadCommand.NotifyCanExecuteChanged();
+            });
+            reader.Disconnect();
+            Connected = false;
         }
 
     }

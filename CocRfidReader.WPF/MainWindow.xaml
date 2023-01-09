@@ -7,6 +7,7 @@
     xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
     xmlns:local="clr-namespace:CocRfidReader.WPF"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:userControls="clr-namespace:CocRfidReader.WPF.UserControls"
     xmlns:views="clr-namespace:CocRfidReader.WPF.Views"
     Title="MainWindow"
     MinWidth="860"
@@ -25,10 +26,26 @@
             <RowDefinition Height="60" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="60" />
+            <ColumnDefinition Width="60" />
             <ColumnDefinition />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
+        <userControls:FancyButton
+            Grid.Row="0"
+            Grid.Column="0"
+            AnimationStarted="{Binding Connecting, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+            ButtonText="{Binding ConnectionButtonText, Mode=OneWay}"
+            ConnectCommand="{Binding ConnectionToggleCommand}"
+            Connected="{Binding Connected}"
+            IsImageButton="False" />
+        <userControls:FancyButton
+            Grid.Row="0"
+            Grid.Column="1"
+            ButtonText="Ustawienia"
+            IsImageButton="True" />
         <Border
+            Grid.Column="2"
             Margin="10"
             BorderBrush="Black"
             BorderThickness="2"
@@ -62,7 +79,7 @@
 
         </Border>
         <Button
-            Grid.Column="1"
+            Grid.Column="3"
             Margin="10,5"
             Panel.ZIndex="2"
             BorderThickness="0"
@@ -82,13 +99,13 @@
         <views:CocsView
             Grid.Row="1"
             Grid.Column="0"
-            Grid.ColumnSpan="2"
+            Grid.ColumnSpan="4"
             DataContext="{Binding CocsViewModel}" />
 
         <Button
             Grid.Row="2"
             Grid.Column="0"
-            Grid.ColumnSpan="2"
+            Grid.ColumnSpan="4"
             Margin="10,5"
             Panel.ZIndex="2"
             BorderThickness="0"

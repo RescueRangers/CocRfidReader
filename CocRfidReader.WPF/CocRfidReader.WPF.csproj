@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Images\settings.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0" />
     <PackageReference Include="ConcurrentObservableCollections" Version="1.1.9" />
     <PackageReference Include="Elastic.CommonSchema.Serilog" Version="1.5.3" />
@@ -59,7 +63,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Events\" />
     <Folder Include="Utility\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Images\settings.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>
