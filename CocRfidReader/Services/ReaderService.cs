@@ -37,6 +37,17 @@ namespace CocRfidReader.Services
             this.configuration = configuration;
         }
 
+        public ImpinjReader Connect()
+        {
+            if (_reader == null || !_reader.IsConnected)
+            {
+                ConnectToReader();
+                ConfigureReader();
+                return _reader;
+            }
+            return _reader;
+        }
+
         private void ConnectToReader()
         {
             try
@@ -92,22 +103,12 @@ namespace CocRfidReader.Services
                 Reader.ApplySettings(settings);
 
                 Reader.KeepaliveReceived += Reader_KeepaliveReceived;
-                Reader.ConnectionLost += Reader_ConnectionLost;
             }
             catch (Exception e)
             {
                 _logger?.LogError(e, "Error while attempting to configure the reader.");
                 throw;
             }
-        }
-
-        private void Reader_ConnectionLost(ImpinjReader reader)
-        {
-            _logger?.LogCritical("Connection lost : {0}", _readerhostname);
-            
-            reader.Disconnect();
-
-            ConnectToReader();
         }
 
         private void Reader_KeepaliveReceived(ImpinjReader reader)
