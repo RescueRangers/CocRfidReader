@@ -53,7 +53,7 @@ internal class Program
             .AddSingleton<ItemReader>()
             .BuildServiceProvider();
 
-        var reader = serviceProvider.GetRequiredService<ReaderService>().Reader;
+        var reader = serviceProvider.GetRequiredService<ReaderService>().Connect();
 
         reader.TagsReported += Reader_TagsReported;
         tags.CollectionChanged += Tags_CollectionChanged;
