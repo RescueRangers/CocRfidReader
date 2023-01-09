@@ -1,0 +1,100 @@
+﻿<UserControl
+    x:Class="CocRfidReader.WPF.UserControls.FancyButton"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="clr-namespace:CocRfidReader.WPF.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:CocRfidReader.WPF.UserControls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    x:Name="fancyButtonRoot"
+    d:DesignHeight="60"
+    d:DesignWidth="60"
+    mc:Ignorable="d">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibility" />
+            <converters:ReverseBoolTovisibilityConverter x:Key="ReverseBoolToVisibility" />
+            <Style x:Key="BlinkingBackground" TargetType="Border">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding AnimationStarted, ElementName=fancyButtonRoot}" Value="true">
+                        <DataTrigger.EnterActions>
+                            <BeginStoryboard Name="ConnectingAnimation">
+                                <Storyboard AutoReverse="True" RepeatBehavior="999">
+                                    <ColorAnimation
+                                        FillBehavior="Stop"
+                                        Storyboard.TargetProperty="(Control.Background).(SolidColorBrush.Color)"
+                                        To="Green"
+                                        Duration="0:0:.5" />
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </DataTrigger.EnterActions>
+                        <DataTrigger.ExitActions />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding AnimationStarted, ElementName=fancyButtonRoot}" Value="false">
+                        <DataTrigger.EnterActions>
+                            <StopStoryboard BeginStoryboardName="ConnectingAnimation" />
+                        </DataTrigger.EnterActions>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Connected, ElementName=fancyButtonRoot}" Value="true">
+                        <DataTrigger.Setters>
+                            <Setter Property="Background" Value="Green" />
+                        </DataTrigger.Setters>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Connected, ElementName=fancyButtonRoot}" Value="false">
+                        <DataTrigger.Setters>
+                            <Setter Property="Background" Value="IndianRed" />
+                        </DataTrigger.Setters>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </ResourceDictionary>
+
+    </UserControl.Resources>
+    <Grid Margin="3">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Image
+            x:Name="settingsImage"
+            Grid.Row="0"
+            Width="50"
+            Margin="0,5,0,0"
+            VerticalAlignment="Bottom"
+            Panel.ZIndex="1000"
+            IsHitTestVisible="False"
+            Source="../Images/settings.png"
+            Visibility="{Binding IsImageButton, ElementName=fancyButtonRoot, Converter={StaticResource BoolToVisibility}}" />
+        <Border
+            Grid.Row="0"
+            Width="20"
+            Height="20"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Bottom"
+            Panel.ZIndex="100"
+            CornerRadius="10"
+            Focusable="False"
+            IsHitTestVisible="False"
+            Style="{StaticResource BlinkingBackground}"
+            Visibility="{Binding IsImageButton, ElementName=fancyButtonRoot, Converter={StaticResource ReverseBoolToVisibility}}" />
+        <Button
+            Grid.Row="0"
+            Grid.RowSpan="2"
+            Background="Transparent"
+            BorderThickness="2"
+            Command="{Binding ConnectCommand, ElementName=fancyButtonRoot}">
+            <Button.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="CornerRadius" Value="5" />
+                </Style>
+            </Button.Resources>
+        </Button>
+        <Viewbox Grid.Row="1" Margin="5,0">
+            <TextBlock
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                IsHitTestVisible="False"
+                Text="{Binding ButtonText, ElementName=fancyButtonRoot}" />
+        </Viewbox>
+    </Grid>
+</UserControl>
