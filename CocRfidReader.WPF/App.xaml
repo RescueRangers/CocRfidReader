@@ -4,7 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:CocRfidReader.WPF"
     xmlns:theme="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2"
-    Startup="OnStartup">
+    Startup="OnStartup"
+    Exit="Application_Exit">
     <Application.Resources>
         <SolidColorBrush x:Key="ProgressBar.Progress" Color="#FF06B025" />
         <SolidColorBrush x:Key="ProgressBar.Background" Color="#FFE6E6E6" />

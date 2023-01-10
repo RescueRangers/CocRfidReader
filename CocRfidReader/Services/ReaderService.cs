@@ -9,7 +9,7 @@ namespace CocRfidReader.Services
         private string? _readerhostname;
         private uint _readTime;
         private int _connectTimeout;
-        private IConfiguration configuration;
+        private ConfigurationService configuration;
         private ILogger<ReaderService>? _logger;
         private ImpinjReader? _reader;
 
@@ -28,12 +28,12 @@ namespace CocRfidReader.Services
             } 
         }
 
-        public ReaderService(IConfiguration configuration, ILogger<ReaderService>? logger = null)
+        public ReaderService(ConfigurationService configuration, ILogger<ReaderService>? logger = null)
         {
             _logger = logger;
-            _readerhostname = configuration.GetValue<string>("readerIP");
-            _connectTimeout = configuration.GetValue<int>("readerTimeOut");
-            _readTime = configuration.GetValue<uint>("readerReadTime");
+            _readerhostname = configuration.GetSettings().ReaderIP;
+            _connectTimeout = configuration.GetSettings().ReaderTimeOut.GetValueOrDefault(6000);
+            _readTime = (uint)configuration.GetSettings().ReaderReadTime.GetValueOrDefault(20000);
             this.configuration = configuration;
         }
 
@@ -73,7 +73,7 @@ namespace CocRfidReader.Services
             {
                 var settings = Reader.QueryDefaultSettings();
 
-                settings.Session = configuration.GetValue<ushort>("session", 2);
+                settings.Session = (ushort)configuration.GetSettings().Session.GetValueOrDefault(2);
                 settings.SearchMode = SearchMode.SingleTarget;
 
                 settings.AutoStart.Mode = AutoStartMode.None;
@@ -85,17 +85,17 @@ namespace CocRfidReader.Services
 
                 settings.Keepalives.EnableLinkMonitorMode = true;
                 settings.Keepalives.LinkDownThreshold = 5;
-                var rfMode = configuration.GetValue("rfmode", 1000u);
+                var rfMode = (uint)configuration.GetSettings().RfMode.GetValueOrDefault(1000);
                 settings.RfMode = rfMode;
 
-                var antennas = configuration.GetValue("enabledAntennas", 1);
+                var antennas = configuration.GetSettings().EnabledAntennas.GetValueOrDefault(1);
 
                 for (ushort i = 1; i <= antennas; i++)
                 {
                     var antenna = settings.Antennas.GetAntenna(i);
                     antenna.IsEnabled = true;
                     antenna.MaxTxPower = true;
-                    antenna.TxPowerInDbm = configuration.GetValue($"antena{i}Power", 20.0);
+                    antenna.TxPowerInDbm = configuration.GetSettings().GetAntennaPower(i);
                 }
 
                 var features = Reader.QueryFeatureSet();

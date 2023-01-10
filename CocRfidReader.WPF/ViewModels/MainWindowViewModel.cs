@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
@@ -22,14 +23,13 @@ namespace CocRfidReader.WPF.ViewModels
     public class MainWindowViewModel : INotifyPropertyChanged
     {
         private CocReader cocReader;
-        private IConfiguration configuration;
         private ILogger<MainWindowViewModel>? logger;
         private IMessagingService? messagingService;
-        private PacklisteReader packlisteReader;
-        private IAccountsService accountsService;
+        private AccountsJsonService accountsService;
         private MediaPlayer klaxonSound = new();
         private ISendGridClient sendGridClient;
         private ReaderService readerService;
+        private ConfigurationService configurationService;
 
         private ImpinjReader? reader;
         private ConcurrentObservableDictionary<string, Tag> tags = new();
@@ -117,28 +117,32 @@ namespace CocRfidReader.WPF.ViewModels
 
         public MainWindowViewModel
             (CocReader cocReader,
-            PacklisteReader packlisteReader,
             ReaderService readerService,
-            IConfiguration configuration,
-            IAccountsService accountsService,
+            ConfigurationService configurationService,
+            AccountsJsonService accountsService,
             ISendGridClient sendGridClient,
             CocsViewModel cocsViewModel,
             ILogger<MainWindowViewModel>? logger = null,
             IMessagingService? messagingService = null)
         {
             this.cocReader = cocReader;
-            this.configuration = configuration;
             tags.CollectionChanged += Tags_CollectionChanged;
             this.logger = logger;
             this.messagingService = messagingService;
-            this.packlisteReader = packlisteReader;
             this.readerService = readerService;
             this.cocsViewModel = cocsViewModel;
             this.accountsService = accountsService;
             this.sendGridClient = sendGridClient;
 
             GetAccounts();
+            accountsService.AccountsChanged += AccountsService_AccountsChanged;
             SetUpCommands();
+            this.configurationService = configurationService;
+        }
+
+        private void AccountsService_AccountsChanged(object? sender, EventArgs e)
+        {
+            GetAccounts();
         }
 
         private void SetUpCommands()
@@ -223,8 +227,7 @@ namespace CocRfidReader.WPF.ViewModels
 
         private async Task SaveCocsAndNotify()
         {
-            var notifyEmails = configuration.GetSection("notifyAddresses").Get<string[]>();
-            var ccEmails = configuration.GetSection("ccAddresses").Get<string[]>();
+            var notifyEmails = configurationService.GetSettings().NotifyAddresses;
 
             var file = await SaveCocsToTemp();
 
@@ -235,7 +238,7 @@ namespace CocRfidReader.WPF.ViewModels
             }
             else
             {
-                var response = await SendCocsByEmail(notifyEmails, ccEmails, file);
+                var response = await SendCocsByEmail(notifyEmails, file);
                 await ProcessSendGridResponse(response, file);
             }
             ClearTemp();
@@ -302,25 +305,20 @@ namespace CocRfidReader.WPF.ViewModels
 
         }
 
-        private async Task<Response?> SendCocsByEmail(string[] notifyEmails, string[]? ccEmails, string file)
+        private async Task<Response?> SendCocsByEmail(List<string> notifyEmails, string file)
         {
             if (SelectedAccount == null) return new Response(System.Net.HttpStatusCode.ExpectationFailed, new StringContent("Nie zaznaczono konta klienta."), null);
             try
             {
                 var msg = new SendGridMessage()
                 {
-                    From = new EmailAddress(configuration.GetValue<string>("fromAddress"), "Coc skaner na rampa1"),
+                    From = new EmailAddress(configurationService.GetSettings().FromAddress, "Coc skaner na rampa1"),
                     Subject = "Nowy załadunek"
                 };
 
                 await AddMessageContent(file, msg);
 
                 PopulateToField(notifyEmails, msg);
-
-                if (ccEmails != null && ccEmails.Any())
-                {
-                    PopulateCCField(ccEmails, msg);
-                }
 
                 return await sendGridClient.SendEmailAsync(msg);
             }
@@ -346,7 +344,7 @@ Numery COC znajdują się w załączniku do tej wiadomości.");
             }
         }
 
-        private static void PopulateToField(string[] notifyEmails, SendGridMessage msg)
+        private static void PopulateToField(List<string> notifyEmails, SendGridMessage msg)
         {
             foreach (var email in notifyEmails)
             {
@@ -370,7 +368,7 @@ Numery COC znajdują się w załączniku do tej wiadomości.");
 
         private async void GetAccounts()
         {
-            accounts = new ObservableCollection<AccountViewModel>(await accountsService.GetAccounts());
+            Accounts = new ObservableCollection<AccountViewModel>(await accountsService.GetAccounts());
         }
 
         private async void Tags_CollectionChanged(object? sender, DictionaryChangedEventArgs<string, Tag> e)

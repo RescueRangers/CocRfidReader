@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using CocRfidReader.Services;
@@ -12,7 +6,6 @@ using Serilog.Formatting.Compact;
 using Serilog;
 using CocRfidReader.WPF.ViewModels;
 using CocRfidReader.WPF.Services;
-using Elastic.CommonSchema.Serilog;
 using SendGrid.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -65,7 +58,6 @@ namespace CocRfidReader.WPF
                     b.AddSerilog(logger);
                 })
 #endif
-                .AddSingleton<IConfiguration>(configuration)
                 .AddSingleton<ReaderService>()
                 .AddSingleton<CocReader>()
                 .AddSingleton<ItemReader>()
@@ -88,6 +80,12 @@ namespace CocRfidReader.WPF
             await host.StartAsync();
             var mainWindow = host.Services.GetService<MainWindow>();
             mainWindow.Show();
+        }
+
+        private void Application_Exit(object sender, ExitEventArgs e)
+        {
+            var reader = host.Services.GetService<ReaderService>();
+            reader.Reader.Disconnect();
         }
     }
 }

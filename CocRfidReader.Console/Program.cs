@@ -22,10 +22,6 @@ internal class Program
 
     private static void Main(string[] args)
     {
-        var builder = new ConfigurationBuilder()
-                        .AddJsonFile(@".\Configuration\settings.json", false, true)
-                        .Build();
-
         var serviceProvider = new ServiceCollection()
 #if DEBUG
             .AddLogging(b =>
@@ -47,10 +43,10 @@ internal class Program
                     b.AddSerilog(logger);
                 })
 #endif
-            .AddSingleton<IConfiguration>(builder)
             .AddSingleton<ReaderService>()
             .AddSingleton<CocReader>()
             .AddSingleton<ItemReader>()
+            .AddSingleton<ConfigurationService>()
             .BuildServiceProvider();
 
         var reader = serviceProvider.GetRequiredService<ReaderService>().Connect();
