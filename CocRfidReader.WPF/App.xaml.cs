@@ -14,6 +14,7 @@ using CocRfidReader.WPF.ViewModels;
 using CocRfidReader.WPF.Services;
 using Elastic.CommonSchema.Serilog;
 using SendGrid.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace CocRfidReader.WPF
 {
@@ -22,16 +23,22 @@ namespace CocRfidReader.WPF
     /// </summary>
     public partial class App : Application
     {
-        private ServiceProvider serviceProvider;
+        private IHost host;
 
         public App()
         {
-            ServiceCollection services = new();
-            ConfigureServices(services);
-            serviceProvider = services.BuildServiceProvider();
+            host = new HostBuilder()
+                .ConfigureServices((context, services) =>
+                {
+                    ConfigureServices(services);
+                })
+                .Build();
+            //ServiceCollection services = new();
+            //ConfigureServices(services);
+            //serviceProvider = services.BuildServiceProvider();
         }
 
-        private void ConfigureServices(ServiceCollection services)
+        private void ConfigureServices(IServiceCollection services)
         {
             var configuration = new ConfigurationBuilder()
                         .AddJsonFile(@".\Configuration\settings.json", false, true)
@@ -63,20 +70,23 @@ namespace CocRfidReader.WPF
                 .AddSingleton<CocReader>()
                 .AddSingleton<ItemReader>()
                 .AddSingleton<MainWindowViewModel>()
-                .AddSingleton<PacklisteReader>()
                 .AddTransient<MainWindow>()
                 .AddSingleton<CocsViewModel>()
                 .AddSingleton<IMessagingService, WpfMessagingService>()
-                .AddSingleton<IAccountsService, AccountsJsonService>()
+                .AddSingleton<AccountsJsonService>()
+                .AddHostedService(sp => sp.GetRequiredService<AccountsJsonService>())
+                .AddSingleton<ConfigurationService>()
+                .AddHostedService(sp => sp.GetRequiredService<ConfigurationService>())
                 .AddSendGrid(options =>
                 {
                     options.ApiKey = configuration.GetValue<string>("sendGridAPI");
                 });
         }
 
-        private void OnStartup(object sender, StartupEventArgs e)
+        private async void OnStartup(object sender, StartupEventArgs e)
         {
-            var mainWindow = serviceProvider.GetService<MainWindow>();
+            await host.StartAsync();
+            var mainWindow = host.Services.GetService<MainWindow>();
             mainWindow.Show();
         }
     }
