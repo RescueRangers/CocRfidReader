@@ -11,6 +11,9 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using CocRfidReader.WPF.Messages;
+using CocRfidReader.WPF.ViewModels;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace CocRfidReader.WPF.Views
 {
@@ -19,9 +22,12 @@ namespace CocRfidReader.WPF.Views
     /// </summary>
     public partial class SettingsView : Window
     {
-        public SettingsView()
+        private SettingsViewModel viewModel;
+        public SettingsView(SettingsViewModel viewModel)
         {
             InitializeComponent();
+            this.viewModel = viewModel;
+            DataContext = viewModel;
         }
     }
 }

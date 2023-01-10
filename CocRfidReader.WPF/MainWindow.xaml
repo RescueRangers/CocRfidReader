@@ -42,6 +42,7 @@
         <userControls:FancyButton
             Grid.Row="0"
             Grid.Column="1"
+            ConnectCommand="{Binding OpenSettingsCommand}"
             ButtonText="Ustawienia"
             IsImageButton="True" />
         <Border

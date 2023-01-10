@@ -9,8 +9,10 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using CocRfidReader.Services;
+using CocRfidReader.WPF.Messages;
 using CocRfidReader.WPF.Services;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using ConcurrentObservableCollections.ConcurrentObservableDictionary;
 using Impinj.OctaneSdk;
 using Microsoft.Extensions.Configuration;
@@ -114,6 +116,7 @@ namespace CocRfidReader.WPF.ViewModels
         public IAsyncRelayCommand StartReadCommand { get; private set; }
         public IAsyncRelayCommand FinishLoadingCommand { get; private set; }
         public IRelayCommand ConnectionToggleCommand { get; set; }
+        public IRelayCommand OpenSettingsCommand { get; set; }
 
         public MainWindowViewModel
             (CocReader cocReader,
@@ -150,6 +153,12 @@ namespace CocRfidReader.WPF.ViewModels
             StartReadCommand = new AsyncRelayCommand(StartRead, () => CanRead());
             ConnectionToggleCommand = new RelayCommand(() => ToggleConnection(readerService));
             FinishLoadingCommand = new AsyncRelayCommand(FinishLoading, () => LoadingStarted);
+            OpenSettingsCommand = new RelayCommand(OpenSettings);
+        }
+
+        private void OpenSettings()
+        {
+            WeakReferenceMessenger.Default.Send<OpenSettingsMessage>();
         }
 
         private async Task StartRead()

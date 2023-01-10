@@ -8,13 +8,16 @@ using CocRfidReader.WPF.ViewModels;
 using CocRfidReader.WPF.Services;
 using SendGrid.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using CocRfidReader.WPF.Views;
+using CocRfidReader.WPF.Messages;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace CocRfidReader.WPF
 {
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
-    public partial class App : Application
+    public partial class App : Application, IRecipient<OpenSettingsMessage>
     {
         private IHost host;
 
@@ -26,6 +29,7 @@ namespace CocRfidReader.WPF
                     ConfigureServices(services);
                 })
                 .Build();
+            WeakReferenceMessenger.Default.Register<OpenSettingsMessage>(this);
             //ServiceCollection services = new();
             //ConfigureServices(services);
             //serviceProvider = services.BuildServiceProvider();
@@ -63,6 +67,8 @@ namespace CocRfidReader.WPF
                 .AddSingleton<ItemReader>()
                 .AddSingleton<MainWindowViewModel>()
                 .AddTransient<MainWindow>()
+                .AddSingleton<SettingsViewModel>()
+                .AddTransient<SettingsView>()
                 .AddSingleton<CocsViewModel>()
                 .AddSingleton<IMessagingService, WpfMessagingService>()
                 .AddSingleton<AccountsJsonService>()
@@ -86,6 +92,12 @@ namespace CocRfidReader.WPF
         {
             var reader = host.Services.GetService<ReaderService>();
             reader.Reader.Disconnect();
+        }
+
+        void IRecipient<OpenSettingsMessage>.Receive(OpenSettingsMessage message)
+        {
+            var settingsView = host.Services.GetRequiredService<SettingsView>();
+            settingsView.Show();
         }
     }
 }
