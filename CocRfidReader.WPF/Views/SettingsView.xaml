@@ -6,29 +6,253 @@
     xmlns:local="clr-namespace:CocRfidReader.WPF.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:userControls="clr-namespace:CocRfidReader.WPF.UserControls"
+    x:Name="settingsRoot"
     Title="SettingsView"
-    Width="800"
-    Height="450"
+    MinWidth="400"
+    MinHeight="600"
+    MaxWidth="400"
+    MaxHeight="600"
+    ResizeMode="NoResize"
     mc:Ignorable="d">
+    <Window.Resources>
+        <ResourceDictionary>
+            <Style x:Key="SettingsLabel" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="16" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="HorizontalAlignment" Value="Center" />
+                <Setter Property="MinWidth" Value="50" />
+            </Style>
+        </ResourceDictionary>
+    </Window.Resources>
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition />
-            <ColumnDefinition />
-        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition />
-            <RowDefinition />
-            <RowDefinition />
+            <RowDefinition Height="1*" MinHeight="80" />
+            <RowDefinition Height="4*" />
+            <RowDefinition Height="2*" />
+            <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
-        <StackPanel Orientation="Horizontal">
-            <Label
-                VerticalAlignment="Center"
-                VerticalContentAlignment="Center"
-                Content="Adres czytnika: "
-                FontSize="16" />
-            <userControls:IpTextBox IpAddress="172.25.194.33" />
-
-        </StackPanel>
+        <GroupBox
+            Grid.Row="0"
+            Grid.Column="0"
+            Grid.ColumnSpan="2"
+            Margin="10,0"
+            Header="Czytnik">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="2*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock
+                    Grid.Column="0"
+                    Style="{StaticResource SettingsLabel}"
+                    Text="Adres czytnika: " />
+                <userControls:IpTextBox
+                    Grid.Column="1"
+                    MaxHeight="60"
+                    IpAddress="{Binding ReaderIp, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            </Grid>
+        </GroupBox>
+        <GroupBox
+            Grid.Row="1"
+            Margin="10"
+            Header="Anteny">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="80" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Style="{StaticResource SettingsLabel}"
+                    Text="Aktywne anteny:" />
+                <StackPanel
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal">
+                    <RadioButton
+                        Margin="5"
+                        Content="1"
+                        FontSize="16"
+                        FontWeight="Bold"
+                        GroupName="Antena" />
+                    <RadioButton
+                        Margin="5"
+                        Content="2"
+                        FontSize="16"
+                        FontWeight="Bold"
+                        GroupName="Antena" />
+                    <RadioButton
+                        Margin="5"
+                        Content="3"
+                        FontSize="16"
+                        FontWeight="Bold"
+                        GroupName="Antena" />
+                    <RadioButton
+                        Margin="5"
+                        Content="4"
+                        FontSize="16"
+                        FontWeight="Bold"
+                        GroupName="Antena" />
+                </StackPanel>
+                <GroupBox
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    Margin="5"
+                    Header="Moc">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition MaxWidth="120" />
+                            <ColumnDefinition />
+                            <ColumnDefinition MaxWidth="60" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Style="{StaticResource SettingsLabel}"
+                            Text="Antena 1:" />
+                        <Slider
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            IsSnapToTickEnabled="True"
+                            Maximum="33"
+                            Minimum="10"
+                            TickFrequency="0.25"
+                            Value="{Binding Antena1Power}" />
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="3"
+                            Style="{StaticResource SettingsLabel}"
+                            Text="{Binding Antena1Power, StringFormat=N2}" />
+                        <TextBlock
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Style="{StaticResource SettingsLabel}"
+                            Text="Antena 2:" />
+                        <Slider
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            IsSnapToTickEnabled="True"
+                            Maximum="33"
+                            Minimum="10"
+                            TickFrequency="0.25"
+                            Value="{Binding Antena2Power}" />
+                        <TextBlock
+                            Grid.Row="1"
+                            Grid.Column="3"
+                            Style="{StaticResource SettingsLabel}"
+                            Text="{Binding Antena2Power, StringFormat=N2}" />
+                        <TextBlock
+                            Grid.Row="2"
+                            Grid.Column="0"
+                            Style="{StaticResource SettingsLabel}"
+                            Text="Antena 3:" />
+                        <Slider
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            IsSnapToTickEnabled="True"
+                            Maximum="33"
+                            Minimum="10"
+                            TickFrequency="0.25"
+                            Value="{Binding Antena3Power}" />
+                        <TextBlock
+                            Grid.Row="2"
+                            Grid.Column="3"
+                            Style="{StaticResource SettingsLabel}"
+                            Text="{Binding Antena3Power, StringFormat=N2}" />
+                        <TextBlock
+                            Grid.Row="3"
+                            Grid.Column="0"
+                            Style="{StaticResource SettingsLabel}"
+                            Text="Antena 4:" />
+                        <Slider
+                            Grid.Row="3"
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            IsSnapToTickEnabled="True"
+                            Maximum="33"
+                            Minimum="10"
+                            TickFrequency="0.25"
+                            Value="{Binding Antena4Power}" />
+                        <TextBlock
+                            Grid.Row="3"
+                            Grid.Column="3"
+                            Style="{StaticResource SettingsLabel}"
+                            Text="{Binding Antena4Power, StringFormat=N2}" />
+                    </Grid>
+                </GroupBox>
+            </Grid>
+        </GroupBox>
+        <GroupBox
+            Grid.Row="2"
+            Grid.Column="0"
+            Margin="10"
+            Header="Powiadomienia">
+            <DataGrid
+                Margin="5"
+                AutoGenerateColumns="False"
+                CanUserAddRows="True"
+                ItemsSource="{Binding NotifyAddresses}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Width="*" Binding="{Binding Path=.}">
+                        <DataGridTextColumn.HeaderTemplate>
+                            <DataTemplate>
+                                <DockPanel Width="320" LastChildFill="False">
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        DockPanel.Dock="Left"
+                                        Text="Adres" />
+                                    <Button
+                                        Grid.Column="1"
+                                        Command="{Binding AddAddressCommand}"
+                                        DockPanel.Dock="Right">
+                                        <Button.Content>
+                                            <Image Width="20">
+                                                <Image.Source>
+                                                    <BitmapImage DecodePixelWidth="20" UriSource="../Images/add.png" />
+                                                </Image.Source>
+                                            </Image>
+                                        </Button.Content>
+                                    </Button>
+                                </DockPanel>
+                            </DataTemplate>
+                        </DataGridTextColumn.HeaderTemplate>
+                    </DataGridTextColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </GroupBox>
+        <Button
+            Grid.Row="3"
+            Grid.Column="0"
+            Margin="10,5"
+            Panel.ZIndex="2"
+            BorderThickness="0"
+            Command="{Binding SaveSettingsCommand}"
+            Content="Zapisz ustawienia"
+            FontSize="22"
+            FontWeight="Bold">
+            <Button.Resources>
+                <Style TargetType="{x:Type Border}">
+                    <Setter Property="CornerRadius" Value="15" />
+                    <Setter Property="BorderThickness" Value="8" />
+                    <Setter Property="BorderBrush" Value="Black" />
+                </Style>
+            </Button.Resources>
+        </Button>
     </Grid>
 </Window>
