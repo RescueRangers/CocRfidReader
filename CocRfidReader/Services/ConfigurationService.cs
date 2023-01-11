@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using System.Text.Json;
 using CocRfidReader.Models;
 using Microsoft.Extensions.Hosting;
@@ -33,6 +34,19 @@ namespace CocRfidReader.Services
             reader.Close();
             fileStream.Close();
             return settings;
+        }
+
+        public void SaveSettings(SettingsModel settings)
+        {
+            var file = new FileInfo(@".\Configuration\settings.json");
+            var json = JsonSerializer.Serialize(settings);
+
+            using var fileStream = new FileStream(file.FullName, FileMode.Truncate, FileAccess.Write, FileShare.ReadWrite);
+            using var writer = new StreamWriter(fileStream, Encoding.UTF8);
+
+            writer.WriteLine(json);
+            writer.Close();
+            fileStream.Close();
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
