@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -19,7 +21,7 @@ namespace CocRfidReader.WPF.UserControls
     /// <summary>
     /// Interaction logic for IpTextBox.xaml
     /// </summary>
-    public partial class IpTextBox : UserControl
+    public partial class IpTextBox : UserControl, INotifyPropertyChanged
     {
         public static readonly DependencyProperty IpAddressProperty =
             DependencyProperty.Register
@@ -38,49 +40,119 @@ namespace CocRfidReader.WPF.UserControls
             if(ipOctets.Length != 4) return;
             if(ipOctets.Any(s => s.Length > 3)) return;
 
-            for (int i = 0; i < 4; i++)
+            var control = (IpTextBox)d;
+            control.UpdateOctets(ipOctets);
+        }
+
+        private void UpdateOctets(string[] octets)
+        {
+            Octet1.Text = octets[0];
+            Octet2.Text = octets[1];
+            Octet3.Text = octets[2];
+            Octet4.Text = octets[3];
+        }
+
+        public static readonly DependencyProperty Octet1Property =
+            DependencyProperty.Register
+            (
+                nameof(Octet1Str),
+                typeof(string),
+                typeof(IpTextBox),
+                new UIPropertyMetadata("", OnOctetChanged)
+            );
+
+        public string Octet1Str
+        {
+            get { return (string)GetValue(Octet1Property); }
+            set
             {
-                octets[i].Text = ipOctets[i];
+                SetValue(Octet1Property, value);
+            }
+        }
+        public static readonly DependencyProperty Octet2Property =
+            DependencyProperty.Register
+            (
+                nameof(Octet2Str),
+                typeof(string),
+                typeof(IpTextBox),
+                new UIPropertyMetadata("", OnOctetChanged)
+            );
+        public string Octet2Str
+        {
+            get { return (string)GetValue(Octet2Property); }
+            set
+            {
+                SetValue(Octet2Property, value);
+            }
+        }
+        public static readonly DependencyProperty Octet3Property =
+            DependencyProperty.Register
+            (
+                nameof(Octet3Str),
+                typeof(string),
+                typeof(IpTextBox),
+                new UIPropertyMetadata("", OnOctetChanged)
+            );
+        public string Octet3Str
+        {
+            get { return (string)GetValue(Octet3Property); }
+            set
+            {
+                SetValue(Octet3Property, value);
+            }
+        }
+        public static readonly DependencyProperty Octet4Property =
+            DependencyProperty.Register
+            (
+                nameof(Octet4Str),
+                typeof(string),
+                typeof(IpTextBox),
+                new UIPropertyMetadata("", OnOctetChanged)
+            );
+        public string Octet4Str
+        {
+            get { return (string)GetValue(Octet4Property); }
+            set
+            {
+                SetValue(Octet4Property, value);
             }
         }
 
-        private static List<TextBox> octets = new List<TextBox>();
+        private static void OnOctetChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var control = (IpTextBox)d;
+            control.UpdateIpAddress();
+        }
 
-        //public string? IpAddress 
-        //{
-        //    get { return (string)GetValue(IpAddressProperty); }
-        //    set { SetValue(IpAddressProperty, value); }
-        //}
+
+        public void UpdateIpAddress()
+        {
+            IpAddress = $"{Octet1Str}.{Octet2Str}.{Octet3Str}.{Octet4Str}";
+        }
 
         public string IpAddress
         {
-            get => string.Join('.', octets.Select(s => s.Text));
+            get { return (string)GetValue(IpAddressProperty); }
             set
             {
-                if (string.IsNullOrWhiteSpace(value)) return;
-                var ip = value;
-                var ipOctets = ip.Split('.');
-                if (ipOctets.Length != 4) return;
-                if (ipOctets.Any(s => s.Length > 3)) return;
-
-                for (int i = 0; i < 4; i++)
-                {
-                    octets[i].Text = ipOctets[i];
-                }
+                SetValue(IpAddressProperty, value);
             }
         }
 
         private bool dontSelectAll = false;
 
+        public event PropertyChangedEventHandler? PropertyChanged;
+        private void RaisePropertyChanged([CallerMemberName]string propertyName = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
         public IpTextBox()
         {
             InitializeComponent();
-            octets.Add(Octet1);
-            octets.Add(Octet2);
-            octets.Add(Octet3);
-            octets.Add(Octet4);
         }
 
+        #region Events
         private void Octet_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             var textBox = (TextBox)sender;
@@ -141,5 +213,6 @@ namespace CocRfidReader.WPF.UserControls
             box.SelectAll();
             e.Handled = true;
         }
+        #endregion
     }
 }

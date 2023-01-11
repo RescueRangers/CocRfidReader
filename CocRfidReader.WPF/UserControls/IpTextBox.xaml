@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:CocRfidReader.WPF.UserControls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    x:Name="ipAddressRoot"
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
@@ -58,7 +59,8 @@
                     PreviewKeyDown="Octet_PreviewKeyDown"
                     PreviewTextInput="Octet_PreviewTextInput"
                     Style="{StaticResource BorderlessTextBox}"
-                    TabIndex="0" />
+                    TabIndex="0"
+                    Text="{Binding Octet1Str, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ElementName=ipAddressRoot}" />
             </Viewbox>
 
             <Label
@@ -74,7 +76,8 @@
                     PreviewKeyDown="Octet_PreviewKeyDown"
                     PreviewTextInput="Octet_PreviewTextInput"
                     Style="{StaticResource BorderlessTextBox}"
-                    TabIndex="1" />
+                    TabIndex="1"
+                    Text="{Binding Octet2Str, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ElementName=ipAddressRoot}" />
             </Viewbox>
 
             <Label
@@ -90,7 +93,8 @@
                     PreviewKeyDown="Octet_PreviewKeyDown"
                     PreviewTextInput="Octet_PreviewTextInput"
                     Style="{StaticResource BorderlessTextBox}"
-                    TabIndex="2" />
+                    TabIndex="2"
+                    Text="{Binding Octet3Str, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ElementName=ipAddressRoot}" />
             </Viewbox>
 
             <Label
@@ -106,7 +110,8 @@
                     PreviewKeyDown="Octet_PreviewKeyDown"
                     PreviewTextInput="Octet_PreviewTextInput"
                     Style="{StaticResource BorderlessTextBox}"
-                    TabIndex="3" />
+                    TabIndex="3"
+                    Text="{Binding Octet4Str, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ElementName=ipAddressRoot}" />
             </Viewbox>
 
         </Grid>
