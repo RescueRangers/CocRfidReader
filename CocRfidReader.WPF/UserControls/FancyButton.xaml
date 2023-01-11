@@ -14,6 +14,7 @@
         <ResourceDictionary>
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibility" />
             <converters:ReverseBoolTovisibilityConverter x:Key="ReverseBoolToVisibility" />
+            <converters:ImageConverter x:Key="ImageConverter" />
             <Style x:Key="BlinkingBackground" TargetType="Border">
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding AnimationStarted, ElementName=fancyButtonRoot}" Value="true">
@@ -63,8 +64,9 @@
             VerticalAlignment="Bottom"
             Panel.ZIndex="1000"
             IsHitTestVisible="False"
-            Source="../Images/settings.png"
+            Source="{Binding ImageSource, ElementName=fancyButtonRoot}"
             Visibility="{Binding IsImageButton, ElementName=fancyButtonRoot, Converter={StaticResource BoolToVisibility}}" />
+
         <Border
             Grid.Row="0"
             Width="20"

@@ -108,6 +108,48 @@ namespace CocRfidReader.WPF.UserControls
             set { SetValue(IsImageButtonProperty, value); }
         }
 
+        public static readonly DependencyProperty ImagePathProperty =
+            DependencyProperty.Register
+            (
+                nameof(ImageSource),
+                typeof(string),
+                typeof(FancyButton),
+                new UIPropertyMetadata("empty.png")
+            );
+
+        private static void ImagePathChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        public object ImageSource
+        {
+            get
+            {
+                BitmapImage image = new BitmapImage();
+
+                try
+                {
+                    image.BeginInit();
+                    image.CacheOption = BitmapCacheOption.OnLoad;
+                    image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                    image.UriSource = new Uri(ImagePath, UriKind.Relative);
+                    image.EndInit();
+                }
+                catch
+                {
+                    return DependencyProperty.UnsetValue;
+                }
+
+                return image;
+            }
+        }
+        public string ImagePath
+        {
+            get { return (string)GetValue(ImagePathProperty); }
+            set { SetValue(ImagePathProperty, value); }
+        }
+
         public FancyButton()
         {
             InitializeComponent();
