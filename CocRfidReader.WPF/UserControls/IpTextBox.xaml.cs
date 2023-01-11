@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -41,16 +42,35 @@ namespace CocRfidReader.WPF.UserControls
             {
                 octets[i].Text = ipOctets[i];
             }
-
         }
 
         private static List<TextBox> octets = new List<TextBox>();
 
-        public string? IpAddress 
+        //public string? IpAddress 
+        //{
+        //    get { return (string)GetValue(IpAddressProperty); }
+        //    set { SetValue(IpAddressProperty, value); }
+        //}
+
+        public string IpAddress
         {
-            get { return (string)GetValue(IpAddressProperty); }
-            set { SetValue(IpAddressProperty, value); }
+            get => string.Join('.', octets.Select(s => s.Text));
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value)) return;
+                var ip = value;
+                var ipOctets = ip.Split('.');
+                if (ipOctets.Length != 4) return;
+                if (ipOctets.Any(s => s.Length > 3)) return;
+
+                for (int i = 0; i < 4; i++)
+                {
+                    octets[i].Text = ipOctets[i];
+                }
+            }
         }
+
+        private bool dontSelectAll = false;
 
         public IpTextBox()
         {
@@ -63,13 +83,36 @@ namespace CocRfidReader.WPF.UserControls
 
         private void Octet_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if(e.Key == Key.Decimal || e.Key == Key.OemPeriod || e.Key == Key.Enter)
+            var textBox = (TextBox)sender;
+
+            if (e.Key == Key.Decimal || e.Key == Key.OemPeriod || e.Key == Key.Enter)
             {
-                var textBox = (TextBox)sender;
                 var request = new TraversalRequest(FocusNavigationDirection.Next);
                 request.Wrapped = true;
                 textBox.MoveFocus(request);
                 e.Handled = true;
+            }
+            if (e.Key == Key.Back)
+            {
+                if (textBox.SelectionStart == 0)
+                {
+                    var request = new TraversalRequest(FocusNavigationDirection.Previous);
+                    request.Wrapped = true;
+                    dontSelectAll = true;
+                    textBox.MoveFocus(request);
+                    e.Handled = true;
+                }
+                else
+                    e.Handled = false;
+            }
+            else if (textBox.Text.Length >= 3 
+                && textBox.SelectedText.Length == 0 
+                && textBox.Name != "Octet4")
+            {
+                var request = new TraversalRequest(FocusNavigationDirection.Next);
+                request.Wrapped = true;
+                textBox.MoveFocus(request);
+                e.Handled = false;
             }
         }
 
@@ -87,10 +130,16 @@ namespace CocRfidReader.WPF.UserControls
 
         private void Octet_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
         {
-            if (sender is TextBox textBox)
+            var box = sender as TextBox;
+            if (dontSelectAll)
             {
-                textBox.SelectAll();
+                dontSelectAll = false;
+                box.SelectionStart = box.Text.Length;
+                e.Handled = true;
+                return;
             }
+            box.SelectAll();
+            e.Handled = true;
         }
     }
 }
