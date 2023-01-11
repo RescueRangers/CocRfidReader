@@ -117,11 +117,6 @@ namespace CocRfidReader.WPF.UserControls
                 new UIPropertyMetadata("empty.png")
             );
 
-        private static void ImagePathChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
         public object ImageSource
         {
             get
@@ -134,6 +129,7 @@ namespace CocRfidReader.WPF.UserControls
                     image.CacheOption = BitmapCacheOption.OnLoad;
                     image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                     image.UriSource = new Uri(ImagePath, UriKind.Relative);
+                    image.DecodePixelWidth = 50;
                     image.EndInit();
                 }
                 catch

@@ -14,7 +14,6 @@
         <ResourceDictionary>
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibility" />
             <converters:ReverseBoolTovisibilityConverter x:Key="ReverseBoolToVisibility" />
-            <converters:ImageConverter x:Key="ImageConverter" />
             <Style x:Key="BlinkingBackground" TargetType="Border">
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding AnimationStarted, ElementName=fancyButtonRoot}" Value="true">
