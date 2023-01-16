@@ -1,0 +1,60 @@
+﻿<Window
+    x:Class="CocRfidReader.WPF.Views.AccountsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:CocRfidReader.WPF.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="AccountsView"
+    Width="800"
+    Height="450"
+    mc:Ignorable="d">
+    <Grid>
+        <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding Accounts}">
+            <DataGrid.Columns>
+                <DataGridTextColumn
+                    Width="*"
+                    Binding="{Binding AccountNumber}"
+                    Header="Numer konta" />
+                <DataGridTextColumn
+                    Width="*"
+                    Binding="{Binding AccountName}"
+                    Header="Nazwa" />
+                <DataGridTextColumn
+                    Width="*"
+                    Binding="{Binding ZipCity}"
+                    Header="Adres" />
+                <DataGridTemplateColumn>
+                    <DataGridTemplateColumn.Header>
+                        <Button Command="{Binding DataContext.AddAddressCommand, ElementName=settingsRoot}">
+                            <Button.Content>
+                                <Image Width="20">
+                                    <Image.Source>
+                                        <BitmapImage DecodePixelWidth="20" UriSource="../Images/add.png" />
+                                    </Image.Source>
+                                </Image>
+                            </Button.Content>
+                        </Button>
+                    </DataGridTemplateColumn.Header>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}, Path=DataContext.DeleteAddressCommand}"
+                                CommandParameter="{Binding}">
+                                <Button.Content>
+                                    <Image Width="20">
+                                        <Image.Source>
+                                            <BitmapImage DecodePixelWidth="20" UriSource="../Images/remove.png" />
+                                        </Image.Source>
+                                    </Image>
+                                </Button.Content>
+                            </Button>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Window>
