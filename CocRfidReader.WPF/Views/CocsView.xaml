@@ -15,7 +15,7 @@
                 <Setter Property="TextTrimming" Value="None" />
                 <Setter Property="FontSize" Value="22" />
                 <Setter Property="FontFamily" Value="Verdana" />
-                <Setter Property="Foreground" Value="AliceBlue"/>
+                <Setter Property="Foreground" Value="AliceBlue" />
             </Style>
             <Style x:Key="HeaderBorder" TargetType="{x:Type Border}">
                 <Setter Property="Background" Value="DimGray" />
@@ -83,6 +83,7 @@
             Text="Konto" />
 
         <ListView
+            x:Name="cocsView"
             Grid.Row="1"
             Grid.Column="0"
             Grid.ColumnSpan="4"
@@ -92,14 +93,23 @@
             ItemsSource="{Binding Cocs}"
             ScrollViewer.VerticalScrollBarVisibility="Visible"
             SelectedIndex="{Binding SelectedCocIndex}">
-            <ListView.ContextMenu>
-                <ContextMenu>
-                    <MenuItem Command="{Binding DeleteCocCommand}" Header="Delete" />
-                </ContextMenu>
-            </ListView.ContextMenu>
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <local:CocView DataContext="{Binding}" />
+                    <local:CocView DataContext="{Binding}" >
+                        <local:CocView.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Command="{Binding Source={x:Reference Name=cocsView}, Path=DataContext.DeleteCocCommand}" Header="Delete">
+                                    <MenuItem.Icon>
+                                        <Image>
+                                            <Image.Source>
+                                                <BitmapImage DecodePixelWidth="20" UriSource="../Images/remove.png" />
+                                            </Image.Source>
+                                        </Image>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </ContextMenu>
+                        </local:CocView.ContextMenu>
+                    </local:CocView>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
