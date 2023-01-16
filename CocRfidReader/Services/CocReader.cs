@@ -13,10 +13,10 @@ namespace CocRfidReader.Services
 {
     public class CocReader
     {
-        private IConfiguration configuration;
+        private ConfigurationService configuration;
         private ILogger<CocReader>? logger;
 
-        public CocReader(IConfiguration configuration, ILogger<CocReader> logger = null)
+        public CocReader(ConfigurationService configuration, ILogger<CocReader> logger = null)
         {
             this.configuration = configuration;
             this.logger = logger;
@@ -26,7 +26,7 @@ namespace CocRfidReader.Services
         {
             try
             {
-                using var sql = new SqlConnection(configuration.GetValue<string>("connectionString"));
+                using var sql = new SqlConnection(configuration.GetSettings().ConnectionString);
                 return await sql.QueryFirstOrDefaultAsync<Coc>(@"
 with production as (
 SELECT TOP (1) 
