@@ -48,7 +48,7 @@ namespace CocRfidReader.WPF.Services
             while (!stoppingToken.IsCancellationRequested)
             {
                 if (watcher == null) ConfigureWatcher();
-                await Task.Delay(20000);
+                await Task.Delay(20000, stoppingToken);
             }
         }
 
@@ -58,10 +58,10 @@ namespace CocRfidReader.WPF.Services
             watcher.EnableRaisingEvents = true;
             watcher.NotifyFilter = NotifyFilters.Size;
 
-            watcher.Changed += Settings_Changed;
+            watcher.Changed += Accounts_Changed;
         }
 
-        private void Settings_Changed(object sender, FileSystemEventArgs e)
+        private void Accounts_Changed(object sender, FileSystemEventArgs e)
         {
             try
             {
