@@ -54,7 +54,7 @@ namespace CocRfidReader.Services
             while (!stoppingToken.IsCancellationRequested)
             {
                 if (watcher == null) ConfigureWatcher();
-                await Task.Delay(20000);
+                await Task.Delay(20000, stoppingToken);
             }
         }
 
