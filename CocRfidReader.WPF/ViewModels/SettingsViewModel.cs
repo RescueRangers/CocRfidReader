@@ -4,11 +4,14 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using CocRfidReader.Models;
 using CocRfidReader.Services;
+using CocRfidReader.WPF.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 
 namespace CocRfidReader.WPF.ViewModels
 {
@@ -22,11 +25,14 @@ namespace CocRfidReader.WPF.ViewModels
         private double? antena2Power;
         private double? antena3Power;
         private double? antena4Power;
-        private ObservableCollection<string>? notifyAddresses;
+        private ObservableCollection<EmailAddress>? notifyAddresses;
         private SettingsModel settings;
+        private List<int> antennas = new() { 1, 2, 3, 4 };
+        private int selectedAntenaNumber;
 
         public IRelayCommand SaveSettingsCommand { get; set; }
         public IRelayCommand AddAddressCommand { get; set; }
+        public IRelayCommand DeleteAddressCommand { get; set; }
 
         public SettingsViewModel(ConfigurationService configurationService, ILogger<SettingsViewModel> logger)
         {
@@ -39,8 +45,20 @@ namespace CocRfidReader.WPF.ViewModels
 
         private void ConfigureCommands()
         {
-            AddAddressCommand = new RelayCommand(() => NotifyAddresses.Add(""));
-            SaveSettingsCommand = new RelayCommand(() => configurationService.SaveSettings(settings));
+            AddAddressCommand = new RelayCommand(() => NotifyAddresses?.Add(new EmailAddress("")));
+            SaveSettingsCommand = new RelayCommand(SaveSettings);
+            DeleteAddressCommand = new RelayCommand<EmailAddress>(address => DeleteAddress(address));
+        }
+
+        private void DeleteAddress(EmailAddress address)
+        {
+            NotifyAddresses?.Remove(address);
+        }
+
+        private void SaveSettings()
+        {
+            settings.NotifyAddresses = NotifyAddresses?.Select(s => s.Address).ToList();
+            configurationService.SaveSettings(settings);
         }
 
         private void GetSettings()
@@ -52,62 +70,63 @@ namespace CocRfidReader.WPF.ViewModels
             Antena2Power = settings.Antena2Power;
             Antena3Power = settings.Antena3Power;
             Antena4Power = settings.Antena4Power;
+            SelectedAntenaNumber = settings.EnabledAntennas.GetValueOrDefault(2);
 
             if (settings.NotifyAddresses == null)
-                NotifyAddresses = new ObservableCollection<string>();
+                NotifyAddresses = new ObservableCollection<EmailAddress>();
             else
-                NotifyAddresses = new ObservableCollection<string>(settings.NotifyAddresses);
+                NotifyAddresses = new ObservableCollection<EmailAddress>(settings.NotifyAddresses.Select(s => new EmailAddress(s)));
         }
 
-        public string? ReaderIp 
-        { 
-            get => readerIp; 
-            set 
+        public string? ReaderIp
+        {
+            get => readerIp;
+            set
             {
                 readerIp = value;
                 settings.ReaderIP = value;
                 OnPropertyChanged();
-            } 
+            }
         }
-        public int? EnabledAntennas 
-        { 
-            get => enabledAntennas; 
-            set 
+        public int? EnabledAntennas
+        {
+            get => enabledAntennas;
+            set
             {
                 enabledAntennas = value;
                 settings.EnabledAntennas = value;
                 OnPropertyChanged();
-            } 
+            }
         }
-        public double? Antena1Power 
-        { 
-            get => antena1Power; 
-            set 
+        public double? Antena1Power
+        {
+            get => antena1Power;
+            set
             {
                 antena1Power = value;
                 settings.Antena1Power = value;
                 OnPropertyChanged();
-            } 
+            }
         }
-        public double? Antena2Power 
-        { 
-            get => antena2Power; 
-            set 
+        public double? Antena2Power
+        {
+            get => antena2Power;
+            set
             {
                 antena2Power = value;
                 settings.Antena2Power = value;
                 OnPropertyChanged();
-            } 
+            }
         }
-        public double? Antena3Power 
-        { 
-            get => antena3Power; 
-            set 
+        public double? Antena3Power
+        {
+            get => antena3Power;
+            set
             {
                 antena3Power = value;
                 settings.Antena3Power = value;
                 OnPropertyChanged();
-            } 
+            }
         }
         public double? Antena4Power
         {
@@ -118,13 +137,29 @@ namespace CocRfidReader.WPF.ViewModels
                 OnPropertyChanged();
             }
         }
-        public ObservableCollection<string>? NotifyAddresses
+        public ObservableCollection<EmailAddress>? NotifyAddresses
         {
-            get => notifyAddresses; 
+            get => notifyAddresses;
             set
             {
                 notifyAddresses = value;
-                settings.NotifyAddresses = value?.ToList();
+                OnPropertyChanged();
+            }
+        }
+        public List<int> Antennas
+        {
+            get => antennas; set
+            {
+                antennas = value;
+                OnPropertyChanged();
+            }
+        }
+        public int SelectedAntenaNumber
+        {
+            get => selectedAntenaNumber; set
+            {
+                selectedAntenaNumber = value;
+                settings.EnabledAntennas = value;
                 OnPropertyChanged();
             }
         }

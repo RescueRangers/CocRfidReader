@@ -22,12 +22,15 @@ namespace CocRfidReader.WPF.Views
     /// </summary>
     public partial class SettingsView : Window
     {
-        private SettingsViewModel viewModel;
         public SettingsView(SettingsViewModel viewModel)
         {
             InitializeComponent();
-            this.viewModel = viewModel;
             DataContext = viewModel;
+        }
+
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            Close();
         }
     }
 }

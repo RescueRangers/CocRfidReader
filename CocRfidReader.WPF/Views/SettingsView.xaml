@@ -28,7 +28,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="1*" MinHeight="80" />
             <RowDefinition Height="4*" />
-            <RowDefinition Height="2*" />
+            <RowDefinition Height="3*" />
             <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
         <GroupBox
@@ -62,7 +62,7 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="80" />
+                    <RowDefinition Height="40" />
                     <RowDefinition />
                 </Grid.RowDefinitions>
                 <TextBlock
@@ -70,36 +70,16 @@
                     Grid.Column="0"
                     Style="{StaticResource SettingsLabel}"
                     Text="Aktywne anteny:" />
-                <StackPanel
+                <ComboBox
                     Grid.Row="0"
                     Grid.Column="1"
+                    Width="60"
                     VerticalAlignment="Center"
-                    Orientation="Horizontal">
-                    <RadioButton
-                        Margin="5"
-                        Content="1"
-                        FontSize="16"
-                        FontWeight="Bold"
-                        GroupName="Antena" />
-                    <RadioButton
-                        Margin="5"
-                        Content="2"
-                        FontSize="16"
-                        FontWeight="Bold"
-                        GroupName="Antena" />
-                    <RadioButton
-                        Margin="5"
-                        Content="3"
-                        FontSize="16"
-                        FontWeight="Bold"
-                        GroupName="Antena" />
-                    <RadioButton
-                        Margin="5"
-                        Content="4"
-                        FontSize="16"
-                        FontWeight="Bold"
-                        GroupName="Antena" />
-                </StackPanel>
+                    HorizontalContentAlignment="Center"
+                    FontSize="16"
+                    FontWeight="Bold"
+                    ItemsSource="{Binding Antennas}"
+                    SelectedItem="{Binding SelectedAntenaNumber, Mode=TwoWay}" />
                 <GroupBox
                     Grid.Row="1"
                     Grid.Column="0"
@@ -207,41 +187,69 @@
                 Margin="5"
                 AutoGenerateColumns="False"
                 CanUserAddRows="True"
-                ItemsSource="{Binding NotifyAddresses}">
+                ItemsSource="{Binding NotifyAddresses, UpdateSourceTrigger=PropertyChanged}">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Width="*" Binding="{Binding Path=.}">
+                    <DataGridTextColumn Width="*" Binding="{Binding Path=Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                        <DataGridTextColumn.EditingElementStyle>
+                            <Style TargetType="TextBox">
+                                <Setter Property="VerticalAlignment" Value="Center" />
+                            </Style>
+                        </DataGridTextColumn.EditingElementStyle>
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center" />
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
                         <DataGridTextColumn.HeaderTemplate>
                             <DataTemplate>
-                                <DockPanel Width="320" LastChildFill="False">
-                                    <TextBlock
-                                        VerticalAlignment="Center"
-                                        DockPanel.Dock="Left"
-                                        Text="Adres" />
-                                    <Button
-                                        Grid.Column="1"
-                                        Command="{Binding AddAddressCommand}"
-                                        DockPanel.Dock="Right">
-                                        <Button.Content>
-                                            <Image Width="20">
-                                                <Image.Source>
-                                                    <BitmapImage DecodePixelWidth="20" UriSource="../Images/add.png" />
-                                                </Image.Source>
-                                            </Image>
-                                        </Button.Content>
-                                    </Button>
-                                </DockPanel>
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    DockPanel.Dock="Left"
+                                    Text="Adres" />
                             </DataTemplate>
                         </DataGridTextColumn.HeaderTemplate>
                     </DataGridTextColumn>
+                    <DataGridTemplateColumn>
+                        <DataGridTemplateColumn.Header>
+                            <Button Command="{Binding DataContext.AddAddressCommand, ElementName=settingsRoot}">
+                                <Button.Content>
+                                    <Image Width="20">
+                                        <Image.Source>
+                                            <BitmapImage DecodePixelWidth="20" UriSource="../Images/add.png" />
+                                        </Image.Source>
+                                    </Image>
+                                </Button.Content>
+                            </Button>
+                        </DataGridTemplateColumn.Header>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}, Path=DataContext.DeleteAddressCommand}"
+                                    CommandParameter="{Binding}">
+                                    <Button.Content>
+                                        <Image Width="20">
+                                            <Image.Source>
+                                                <BitmapImage DecodePixelWidth="20" UriSource="../Images/remove.png" />
+                                            </Image.Source>
+                                        </Image>
+                                    </Button.Content>
+                                </Button>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
                 </DataGrid.Columns>
             </DataGrid>
         </GroupBox>
         <Button
+            x:Name="SaveButton"
             Grid.Row="3"
             Grid.Column="0"
             Margin="10,5"
             Panel.ZIndex="2"
             BorderThickness="0"
+            Click="SaveButton_Click"
             Command="{Binding SaveSettingsCommand}"
             Content="Zapisz ustawienia"
             FontSize="22"
