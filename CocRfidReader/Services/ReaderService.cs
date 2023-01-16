@@ -6,9 +6,6 @@ namespace CocRfidReader.Services
 {
     public class ReaderService
     {
-        private string? _readerhostname;
-        private uint _readTime;
-        private int _connectTimeout;
         private ConfigurationService configuration;
         private ILogger<ReaderService>? _logger;
         private ImpinjReader? _reader;
@@ -31,9 +28,7 @@ namespace CocRfidReader.Services
         public ReaderService(ConfigurationService configuration, ILogger<ReaderService>? logger = null)
         {
             _logger = logger;
-            _readerhostname = configuration.GetSettings().ReaderIP;
-            _connectTimeout = configuration.GetSettings().ReaderTimeOut.GetValueOrDefault(6000);
-            _readTime = (uint)configuration.GetSettings().ReaderReadTime.GetValueOrDefault(20000);
+            
             this.configuration = configuration;
         }
 
@@ -50,21 +45,26 @@ namespace CocRfidReader.Services
 
         private void ConnectToReader()
         {
+            var hostName = configuration.GetSettings().ReaderIP;
             try
             {
                 _reader ??= new ImpinjReader();
-
-                _reader.ConnectTimeout = _connectTimeout;
-                _logger?.LogDebug("Attempting connection to reader {0}", _readerhostname);
-                _reader.Connect(_readerhostname);
+                _reader.ConnectTimeout = configuration.GetSettings().ReaderTimeOut.GetValueOrDefault(6000); ;
+                _logger?.LogDebug("Attempting connection to reader {0}", hostName);
+                _reader.Connect(hostName);
                 
             }
             catch(OctaneSdkException e)
             {
-                _logger?.LogError(e, "Failed to connect to IP:{Address}", new { Address = _readerhostname });
+                _logger?.LogError(e, "Failed to connect to IP:{Address}", new { Address = hostName });
                 throw;
             }
             
+        }
+
+        public void Disconnect()
+        {
+            _reader?.Disconnect();
         }
 
         private void ConfigureReader()
