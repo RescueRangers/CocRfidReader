@@ -117,6 +117,7 @@ namespace CocRfidReader.WPF.ViewModels
         public IAsyncRelayCommand FinishLoadingCommand { get; private set; }
         public IRelayCommand ConnectionToggleCommand { get; set; }
         public IRelayCommand OpenSettingsCommand { get; set; }
+        public IRelayCommand OpenAccountsCommand { get; set; }
 
         public MainWindowViewModel
             (CocReader cocReader,
@@ -141,6 +142,25 @@ namespace CocRfidReader.WPF.ViewModels
             accountsService.AccountsChanged += AccountsService_AccountsChanged;
             SetUpCommands();
             this.configurationService = configurationService;
+
+#if DEBUG
+            PopulateCocs();
+#endif
+        }
+
+        private void PopulateCocs()
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                var coc = new CocViewModel(new Model.Coc
+                {
+                    AccountNumber = $"12354-{i}",
+                    PRODUKTIONSNR = 2744+i,
+                    Name = $"item-{i}",
+                    ItemText = "Test item"
+                });
+                cocsViewModel.AddCoc(coc);
+            }
         }
 
         private void AccountsService_AccountsChanged(object? sender, EventArgs e)
@@ -153,12 +173,8 @@ namespace CocRfidReader.WPF.ViewModels
             StartReadCommand = new AsyncRelayCommand(StartRead, () => CanRead());
             ConnectionToggleCommand = new RelayCommand(() => ToggleConnection(readerService));
             FinishLoadingCommand = new AsyncRelayCommand(FinishLoading, () => LoadingStarted);
-            OpenSettingsCommand = new RelayCommand(OpenSettings);
-        }
-
-        private void OpenSettings()
-        {
-            WeakReferenceMessenger.Default.Send<OpenSettingsMessage>();
+            OpenSettingsCommand = new RelayCommand(() => WeakReferenceMessenger.Default.Send<OpenSettingsMessage>());
+            OpenAccountsCommand = new RelayCommand(() => WeakReferenceMessenger.Default.Send<OpenAccountsMessage>());
         }
 
         private async Task StartRead()
@@ -341,9 +357,8 @@ namespace CocRfidReader.WPF.ViewModels
         private async Task AddMessageContent(string file, SendGridMessage msg)
         {
             msg.AddContent(MimeType.Text, $@"Na rampie 1 skończono załadunek do:
-Nazwa: {SelectedAccount.AccountName};
+Nazwa: {SelectedAccount.AccountName}; {SelectedAccount.ZipCity}
 Numer konta: {SelectedAccount.AccountNumber};
-Adres: {SelectedAccount.ZipCity}
 
 Numery COC znajdują się w załączniku do tej wiadomości.");
 

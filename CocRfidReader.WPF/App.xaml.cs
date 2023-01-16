@@ -17,7 +17,7 @@ namespace CocRfidReader.WPF
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
-    public partial class App : Application, IRecipient<OpenSettingsMessage>
+    public partial class App : Application, IRecipient<OpenSettingsMessage>, IRecipient<OpenAccountsMessage>
     {
         private IHost host;
 
@@ -30,9 +30,7 @@ namespace CocRfidReader.WPF
                 })
                 .Build();
             WeakReferenceMessenger.Default.Register<OpenSettingsMessage>(this);
-            //ServiceCollection services = new();
-            //ConfigureServices(services);
-            //serviceProvider = services.BuildServiceProvider();
+            WeakReferenceMessenger.Default.Register<OpenAccountsMessage>(this);
         }
 
         private void ConfigureServices(IServiceCollection services)
@@ -67,8 +65,10 @@ namespace CocRfidReader.WPF
                 .AddSingleton<ItemReader>()
                 .AddSingleton<MainWindowViewModel>()
                 .AddTransient<MainWindow>()
-                .AddSingleton<SettingsViewModel>()
+                .AddTransient<SettingsViewModel>()
                 .AddTransient<SettingsView>()
+                .AddTransient<AccountsViewModel>()
+                .AddTransient<AccountsView>()
                 .AddSingleton<CocsViewModel>()
                 .AddSingleton<IMessagingService, WpfMessagingService>()
                 .AddSingleton<AccountsJsonService>()
@@ -91,13 +91,19 @@ namespace CocRfidReader.WPF
         private void Application_Exit(object sender, ExitEventArgs e)
         {
             var reader = host.Services.GetService<ReaderService>();
-            reader.Reader.Disconnect();
+            reader.Disconnect();
         }
 
         void IRecipient<OpenSettingsMessage>.Receive(OpenSettingsMessage message)
         {
             var settingsView = host.Services.GetRequiredService<SettingsView>();
             settingsView.Show();
+        }
+
+        void IRecipient<OpenAccountsMessage>.Receive(OpenAccountsMessage message)
+        {
+            var accountsView = host.Services.GetRequiredService<AccountsView>();
+            accountsView.Show();
         }
     }
 }
