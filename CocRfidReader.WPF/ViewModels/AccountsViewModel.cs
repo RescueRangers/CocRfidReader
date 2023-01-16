@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CocRfidReader.WPF.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 
 namespace CocRfidReader.WPF.ViewModels
@@ -15,10 +16,19 @@ namespace CocRfidReader.WPF.ViewModels
         private AccountsJsonService accountsService;
         private ILogger<AccountsViewModel> logger;
 
+        public IRelayCommand DeleteAccountCommand { get; set; }
+
         public AccountsViewModel(AccountsJsonService accountsService)
         {
             this.accountsService = accountsService;
             GetAccounts();
+
+            DeleteAccountCommand = new RelayCommand<AccountViewModel>(account => DeleteAccount(account));
+        }
+
+        private void DeleteAccount(AccountViewModel account)
+        {
+            Accounts.Remove(account);
         }
 
         private async void GetAccounts()

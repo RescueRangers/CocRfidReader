@@ -7,7 +7,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace CocRfidReader.WPF.ViewModels
 {
-    public class AccountViewModel : ObservableObject
+    public class AccountViewModel : ObservableObject, IEquatable<AccountViewModel>
     {
         private string zipCity;
         private string accountName;
@@ -39,6 +39,25 @@ namespace CocRfidReader.WPF.ViewModels
                 zipCity = value;
                 OnPropertyChanged();
             } 
+        }
+
+        public override int GetHashCode()
+        {
+            return AccountNumber.GetHashCode();
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is AccountViewModel account)
+                return account.Equals(this);
+            return false;
+        }
+
+        public bool Equals(AccountViewModel? other)
+        {
+            if (other != null && string.Equals(this.AccountNumber, other.AccountNumber, StringComparison.OrdinalIgnoreCase))
+                return true;
+            return false;
         }
     }
 }

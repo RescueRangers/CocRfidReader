@@ -41,7 +41,7 @@
                             <Button
                                 Background="Transparent"
                                 BorderThickness="0"
-                                Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}, Path=DataContext.DeleteAddressCommand}"
+                                Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}, Path=DataContext.DeleteAccountCommand}"
                                 CommandParameter="{Binding}">
                                 <Button.Content>
                                     <Image Width="20">
