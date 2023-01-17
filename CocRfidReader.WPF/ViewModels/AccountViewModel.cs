@@ -2,8 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using CocRfidReader.WPF.Messages;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace CocRfidReader.WPF.ViewModels
 {
@@ -39,6 +43,19 @@ namespace CocRfidReader.WPF.ViewModels
                 zipCity = value;
                 OnPropertyChanged();
             } 
+        }
+
+        [JsonIgnore]
+        public IRelayCommand SaveAccountCommand { get; set; }
+
+        public AccountViewModel()
+        {
+            SaveAccountCommand = new RelayCommand(SaveAccount);
+        }
+
+        private void SaveAccount()
+        {
+            WeakReferenceMessenger.Default.Send(new AccountChangedMessage(this));
         }
 
         public override int GetHashCode()

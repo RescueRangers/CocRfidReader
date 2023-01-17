@@ -1,0 +1,81 @@
+﻿<Window
+    x:Class="CocRfidReader.WPF.Views.AddAccountView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:CocRfidReader.WPF.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="AddAccountViewModel"
+    Width="410"
+    Height="230"
+    ResizeMode="NoResize"
+    mc:Ignorable="d">
+    <Window.Resources>
+        <ResourceDictionary>
+            <Style x:Key="SettingsLabel" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="16" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="MinWidth" Value="50" />
+            </Style>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40" />
+            <RowDefinition Height="40" />
+            <RowDefinition Height="40" />
+            <RowDefinition Height="50" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="120" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <TextBlock
+            Grid.Row="0"
+            Grid.Column="0"
+            Style="{StaticResource SettingsLabel}"
+            Text="Numer konta:" />
+        <TextBox
+            Grid.Row="0"
+            Grid.Column="1"
+            Margin="0,5"
+            VerticalContentAlignment="Center"
+            FontSize="16"
+            Text="{Binding AccountNumber}" />
+        <TextBlock
+            Grid.Row="1"
+            Grid.Column="0"
+            Style="{StaticResource SettingsLabel}"
+            Text="Nazwa:" />
+        <TextBox
+            Grid.Row="1"
+            Grid.Column="1"
+            Margin="0,5"
+            VerticalContentAlignment="Center"
+            FontSize="16"
+            Text="{Binding AccountName}" />
+        <TextBlock
+            Grid.Row="2"
+            Grid.Column="0"
+            Style="{StaticResource SettingsLabel}"
+            Text="Adres:" />
+        <TextBox
+            Grid.Row="2"
+            Grid.Column="1"
+            Margin="0,5"
+            VerticalContentAlignment="Center"
+            FontSize="16"
+            Text="{Binding ZipCity}" />
+        <Button
+            x:Name="saveButton"
+            Grid.Row="3"
+            Grid.Column="0"
+            Grid.ColumnSpan="2"
+            Margin="5"
+            Click="SaveButton_Click"
+            Command="{Binding SaveAccountCommand}"
+            Content="Zapisz"
+            FontSize="16" />
+    </Grid>
+</Window>

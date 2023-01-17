@@ -17,7 +17,7 @@ namespace CocRfidReader.WPF
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
-    public partial class App : Application, IRecipient<OpenSettingsMessage>, IRecipient<OpenAccountsMessage>
+    public partial class App : Application, IRecipient<OpenSettingsMessage>, IRecipient<OpenAccountsMessage>, IRecipient<OpenAccountAddWindowMessage>
     {
         private IHost host;
 
@@ -31,6 +31,7 @@ namespace CocRfidReader.WPF
                 .Build();
             WeakReferenceMessenger.Default.Register<OpenSettingsMessage>(this);
             WeakReferenceMessenger.Default.Register<OpenAccountsMessage>(this);
+            WeakReferenceMessenger.Default.Register<OpenAccountAddWindowMessage>(this);
         }
 
         private void ConfigureServices(IServiceCollection services)
@@ -69,6 +70,8 @@ namespace CocRfidReader.WPF
                 .AddTransient<SettingsView>()
                 .AddTransient<AccountsViewModel>()
                 .AddTransient<AccountsView>()
+                .AddTransient<AccountViewModel>()
+                .AddTransient<AddAccountView>()
                 .AddSingleton<CocsViewModel>()
                 .AddSingleton<IMessagingService, WpfMessagingService>()
                 .AddSingleton<AccountsJsonService>()
@@ -104,6 +107,12 @@ namespace CocRfidReader.WPF
         {
             var accountsView = host.Services.GetRequiredService<AccountsView>();
             accountsView.ShowDialog();
+        }
+
+        public void Receive(OpenAccountAddWindowMessage message)
+        {
+            var addAccountView = host.Services.GetRequiredService<AddAccountView>();
+            addAccountView.ShowDialog();
         }
     }
 }

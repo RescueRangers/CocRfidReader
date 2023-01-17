@@ -4,14 +4,16 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CocRfidReader.WPF.Messages;
 using CocRfidReader.WPF.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.Logging;
 
 namespace CocRfidReader.WPF.ViewModels
 {
-    public class AccountsViewModel : ObservableObject
+    public class AccountsViewModel : ObservableObject, IRecipient<AccountChangedMessage>
     {
         private AccountsJsonService accountsService;
         private ILogger<AccountsViewModel> logger;
@@ -28,11 +30,13 @@ namespace CocRfidReader.WPF.ViewModels
             DeleteAccountCommand = new RelayCommand<AccountViewModel>(account => DeleteAccount(account));
             ClosingAccounts = new RelayCommand(Closing);
             AddAccountCommand = new RelayCommand(AddAccount);
+
+            WeakReferenceMessenger.Default.Register(this);
         }
 
         private void AddAccount()
         {
-            Accounts.Add(new AccountViewModel());
+            WeakReferenceMessenger.Default.Send<OpenAccountAddWindowMessage>();
         }
 
         private void Closing()
@@ -55,6 +59,11 @@ namespace CocRfidReader.WPF.ViewModels
             {
                 logger.LogError(ex.Message);
             }
+        }
+
+        public void Receive(AccountChangedMessage message)
+        {
+            Accounts.Add(message.Value);
         }
 
         public ObservableCollection<AccountViewModel> Accounts { get; set; }
