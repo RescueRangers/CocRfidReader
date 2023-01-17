@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using CocRfidReader.Models;
 using CocRfidReader.WPF.Models;
 using CocRfidReader.WPF.ViewModels;
 using Microsoft.Extensions.Hosting;
@@ -36,11 +37,24 @@ namespace CocRfidReader.WPF.Services
             using var reader = new StreamReader(fileStream, Encoding.UTF8);
 
             var json = await reader.ReadToEndAsync();
-            fileIsChanging = true;
             accounts = JsonSerializer.Deserialize<List<AccountViewModel>>(json);
             reader.Close();
             fileStream.Close();
             return accounts;
+        }
+
+
+        public void SaveAccounts(IEnumerable<AccountViewModel> accounts)
+        {
+            var file = new FileInfo(@".\Configuration\accounts.json");
+            var json = JsonSerializer.Serialize(accounts);
+
+            using var fileStream = new FileStream(file.FullName, FileMode.Truncate, FileAccess.Write, FileShare.ReadWrite);
+            using var writer = new StreamWriter(fileStream, Encoding.UTF8);
+
+            writer.WriteLine(json);
+            writer.Close();
+            fileStream.Close();
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)

@@ -43,7 +43,7 @@ namespace CocRfidReader.WPF.ViewModels
 
         public override int GetHashCode()
         {
-            return AccountNumber.GetHashCode();
+            return string.IsNullOrWhiteSpace(AccountNumber) ? 0 : AccountNumber.GetHashCode();
         }
 
         public override bool Equals(object? obj)

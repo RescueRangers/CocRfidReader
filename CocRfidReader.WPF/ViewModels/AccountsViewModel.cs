@@ -17,6 +17,8 @@ namespace CocRfidReader.WPF.ViewModels
         private ILogger<AccountsViewModel> logger;
 
         public IRelayCommand DeleteAccountCommand { get; set; }
+        public IRelayCommand ClosingAccounts { get; set; }
+        public IRelayCommand AddAccountCommand { get; set; }
 
         public AccountsViewModel(AccountsJsonService accountsService)
         {
@@ -24,6 +26,18 @@ namespace CocRfidReader.WPF.ViewModels
             GetAccounts();
 
             DeleteAccountCommand = new RelayCommand<AccountViewModel>(account => DeleteAccount(account));
+            ClosingAccounts = new RelayCommand(Closing);
+            AddAccountCommand = new RelayCommand(AddAccount);
+        }
+
+        private void AddAccount()
+        {
+            Accounts.Add(new AccountViewModel());
+        }
+
+        private void Closing()
+        {
+            accountsService.SaveAccounts(Accounts);
         }
 
         private void DeleteAccount(AccountViewModel account)
