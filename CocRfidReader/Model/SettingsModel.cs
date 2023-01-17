@@ -45,6 +45,9 @@ namespace CocRfidReader.Models
 
         [JsonPropertyName("fromAddress")]
         public string? FromAddress { get; set; }
+        
+        [JsonPropertyName("rampNumber")]
+        public int? RampNumber { get; set; }
 
         public double GetAntennaPower(int antena)
         {

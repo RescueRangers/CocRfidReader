@@ -14,5 +14,6 @@
   "notifyAddresses": [
 
   ],
-  "fromAddress": ""
+  "fromAddress": "",
+  "rampNumber": 1
 }
