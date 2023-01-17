@@ -97,13 +97,13 @@ namespace CocRfidReader.WPF
         void IRecipient<OpenSettingsMessage>.Receive(OpenSettingsMessage message)
         {
             var settingsView = host.Services.GetRequiredService<SettingsView>();
-            settingsView.Show();
+            settingsView.ShowDialog();
         }
 
         void IRecipient<OpenAccountsMessage>.Receive(OpenAccountsMessage message)
         {
             var accountsView = host.Services.GetRequiredService<AccountsView>();
-            accountsView.Show();
+            accountsView.ShowDialog();
         }
     }
 }
