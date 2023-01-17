@@ -356,16 +356,15 @@ namespace CocRfidReader.WPF.ViewModels
 
         private async Task AddMessageContent(string file, SendGridMessage msg)
         {
-            msg.AddContent(MimeType.Text, $@"Na rampie 1 skończono załadunek do:
+            msg.AddContent(MimeType.Text, $@"Na rampie {configurationService.GetSettings().RampNumber.GetValueOrDefault(1)} skończono załadunek do:
 Nazwa: {SelectedAccount.AccountName}; {SelectedAccount.ZipCity}
 Numer konta: {SelectedAccount.AccountNumber};
 
 Numery COC znajdują się w załączniku do tej wiadomości.");
 
-            using (var fileStream = File.OpenRead(file))
-            {
-                await msg.AddAttachmentAsync("COC.txt", fileStream);
-            }
+            using var fileStream = File.OpenRead(file);
+            await msg.AddAttachmentAsync("COC.txt", fileStream);
+            fileStream.Close();
         }
 
         private static void PopulateToField(List<string> notifyEmails, SendGridMessage msg)
