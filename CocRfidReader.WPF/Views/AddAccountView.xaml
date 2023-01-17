@@ -42,7 +42,7 @@
             Margin="0,5"
             VerticalContentAlignment="Center"
             FontSize="16"
-            Text="{Binding AccountNumber}" />
+            Text="{Binding AccountNumber, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" />
         <TextBlock
             Grid.Row="1"
             Grid.Column="0"

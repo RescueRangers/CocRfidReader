@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using CocRfidReader.WPF.Messages;
+using CocRfidReader.WPF.Validators;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -17,6 +19,9 @@ namespace CocRfidReader.WPF.ViewModels
         private string accountName;
         private string accountNumber;
 
+        private AccountValidator validator = new AccountValidator();
+
+        [Required]
         public string AccountNumber
         {
             get => accountNumber;
@@ -24,6 +29,7 @@ namespace CocRfidReader.WPF.ViewModels
             {
                 accountNumber = value;
                 OnPropertyChanged();
+                SaveAccountCommand.NotifyCanExecuteChanged();
             }
         }
         public string AccountName
@@ -50,12 +56,45 @@ namespace CocRfidReader.WPF.ViewModels
 
         public AccountViewModel()
         {
-            SaveAccountCommand = new RelayCommand(SaveAccount);
+            SaveAccountCommand = new RelayCommand(SaveAccount, CanSave);
+        }
+
+        private bool CanSave()
+        {
+            return validator.Validate(this).IsValid;
         }
 
         private void SaveAccount()
         {
             WeakReferenceMessenger.Default.Send(new AccountChangedMessage(this));
+        }
+
+        public string this[string columnName]
+        {
+            get
+            {
+                var firstOrDefault = validator.Validate(this).Errors.FirstOrDefault(p => p.PropertyName == columnName);
+                if (firstOrDefault != null)
+                    return validator != null ? firstOrDefault.ErrorMessage : "";
+                return "";
+            }
+        }
+
+        public string Error
+        {
+            get
+            {
+                if (validator != null)
+                {
+                    var results = validator.Validate(this);
+                    if (results != null && results.Errors.Any())
+                    {
+                        var errors = string.Join(Environment.NewLine, results.Errors.Select(x => x.ErrorMessage).ToArray());
+                        return errors;
+                    }
+                }
+                return string.Empty;
+            }
         }
 
         public override int GetHashCode()
