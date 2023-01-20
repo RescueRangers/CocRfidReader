@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using CocRfidReader.WPF.ViewModels;
+using CommunityToolkit.Mvvm.Input;
 
 namespace CocRfidReader.WPF
 {
@@ -21,15 +22,20 @@ namespace CocRfidReader.WPF
     /// </summary>
     public partial class MainWindow : Window
     {
-        private MainWindowViewModel viewModel;
+        private bool isFullScreen = false;
+
         public MainWindow(MainWindowViewModel viewModel)
         {
-            this.viewModel = viewModel;
             DataContext = viewModel;
             InitializeComponent();
 
             PackingListTextBox.Focus();
+            GoFullScreen = new RelayCommand(ToggleFullScreen);
+
+            InputBindings.Add(new InputBinding(GoFullScreen, new KeyGesture(Key.F11)));
         }
+
+        public ICommand GoFullScreen { get; }
 
         private bool IsDigit(string text)
         {
@@ -45,6 +51,22 @@ namespace CocRfidReader.WPF
             else
             {
                 e.Handled = true;
+            }
+        }
+
+        public void ToggleFullScreen()
+        {
+            if (isFullScreen)
+            {
+                WindowState = WindowState.Normal;
+                WindowStyle = WindowStyle.ThreeDBorderWindow;
+                isFullScreen = false;
+            }
+            else
+            {
+                WindowStyle = WindowStyle.None;
+                WindowState = WindowState.Maximized;
+                isFullScreen = true;
             }
         }
     }
