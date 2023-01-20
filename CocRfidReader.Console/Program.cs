@@ -100,7 +100,7 @@ internal class Program
                 if (epcValue.StartsWith("888"))
                 {
                     logger?.LogInformation("Getting COC from the database");
-                    var coc = await cocReader.GetAsync(epcValue);
+                    var coc = await cocReader.GetAsync(epcValue, new CancellationToken());
 
                     if (coc == null) return;
 

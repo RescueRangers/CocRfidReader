@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using CocRfidReader.Services;
@@ -41,6 +43,7 @@ namespace CocRfidReader.WPF.ViewModels
         private AccountViewModel? selectedAccount;
         private bool connecting;
         private bool connected;
+        private CancellationTokenSource cancellationTokenSource;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -62,6 +65,7 @@ namespace CocRfidReader.WPF.ViewModels
                 loadingStarted = value;
                 RaisePropertyChanged(nameof(LoadingStarted));
                 StartReadCommand.NotifyCanExecuteChanged();
+                CancelLoadingCommand.NotifyCanExecuteChanged();
                 FinishLoadingCommand.NotifyCanExecuteChanged();
             }
         }
@@ -118,6 +122,7 @@ namespace CocRfidReader.WPF.ViewModels
         public IRelayCommand ConnectionToggleCommand { get; set; }
         public IRelayCommand OpenSettingsCommand { get; set; }
         public IRelayCommand OpenAccountsCommand { get; set; }
+        public IRelayCommand CancelLoadingCommand { get; set; }
 
         public MainWindowViewModel
             (CocReader cocReader,
@@ -175,15 +180,35 @@ namespace CocRfidReader.WPF.ViewModels
             FinishLoadingCommand = new AsyncRelayCommand(FinishLoading, () => LoadingStarted);
             OpenSettingsCommand = new RelayCommand(() => WeakReferenceMessenger.Default.Send<OpenSettingsMessage>());
             OpenAccountsCommand = new RelayCommand(() => WeakReferenceMessenger.Default.Send<OpenAccountsMessage>());
+            CancelLoadingCommand = new RelayCommand(CancelLoading, () => LoadingStarted);
+        }
+
+        private void CancelLoading()
+        {
+            cancellationTokenSource.Cancel();
+            LoadingStarted = false;
+            try
+            {
+                reader?.Stop();
+                InitializeCollections();
+                logger?.LogInformation("Read cancelled");
+
+            }
+            catch (Exception ex)
+            {
+                logger?.LogError(ex.Message);
+                messagingService?.DisplayMessage(ex.Message, MessageType.Error);
+            }
         }
 
         private async Task StartRead()
         {
             LoadingStarted = true;
-
+            cancellationTokenSource = new CancellationTokenSource();
             try
             {
                 reader?.Stop();
+                InitializeCollections();
                 reader?.Start();
                 logger?.LogInformation("Read started");
 
@@ -203,7 +228,7 @@ namespace CocRfidReader.WPF.ViewModels
         private void ToggleConnection(ReaderService readerService)
         {
             Connecting = true;
-            Task task = Task.Run((Action)DoConnect);
+            Task task = Task.Run(DoConnect);
             
         }
 
@@ -396,13 +421,15 @@ Numery COC znajdują się w załączniku do tej wiadomości.");
 
         private async void Tags_CollectionChanged(object? sender, DictionaryChangedEventArgs<string, Tag> e)
         {
+            if(cancellationTokenSource.IsCancellationRequested) return;
             if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add)
             {
+                var token = cancellationTokenSource.Token;
                 try
                 {
                     var epcValue = e.NewValue.Epc.ToHexString();
                     logger?.LogInformation("Getting COC from the database");
-                    var coc = await cocReader.GetAsync(epcValue);
+                    var coc = await cocReader.GetAsync(epcValue, token);
 
                     if (coc == null)
                     {
@@ -428,7 +455,7 @@ Numery COC znajdują się w załączniku do tej wiadomości.");
 
                     CocsViewModel.AddCoc(cocVM);
                 }
-                catch (Exception ex)
+                catch (SqlException ex)
                 {
                     logger?.LogError(ex.Message);
                     messagingService?.DisplayMessage(ex.Message, MessageType.Error);

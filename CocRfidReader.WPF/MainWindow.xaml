@@ -28,6 +28,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="60" />
             <ColumnDefinition Width="60" />
+            <ColumnDefinition Width="60" />
             <ColumnDefinition />
             <ColumnDefinition Width="60" />
             <ColumnDefinition />
@@ -49,6 +50,7 @@
             IsImageButton="True" />
         <Border
             Grid.Column="2"
+            Grid.ColumnSpan="2"
             Margin="10"
             BorderBrush="Black"
             BorderThickness="2"
@@ -83,13 +85,13 @@
         </Border>
         <userControls:FancyButton
             Grid.Row="0"
-            Grid.Column="3"
+            Grid.Column="4"
             ButtonText="Konta"
             ConnectCommand="{Binding OpenAccountsCommand}"
             ImagePath="../Images/edit.png"
             IsImageButton="True" />
         <Button
-            Grid.Column="4"
+            Grid.Column="5"
             Margin="10,5"
             Panel.ZIndex="2"
             BorderThickness="0"
@@ -109,12 +111,32 @@
         <views:CocsView
             Grid.Row="1"
             Grid.Column="0"
-            Grid.ColumnSpan="5"
+            Grid.ColumnSpan="6"
             DataContext="{Binding CocsViewModel}" />
 
         <Button
             Grid.Row="2"
             Grid.Column="0"
+            Grid.ColumnSpan="3"
+            Margin="10,5"
+            Panel.ZIndex="2"
+            BorderThickness="0"
+            Command="{Binding CancelLoadingCommand}"
+            Content="Anuluj"
+            FontSize="22"
+            FontWeight="Bold">
+            <Button.Resources>
+                <Style TargetType="{x:Type Border}">
+                    <Setter Property="CornerRadius" Value="15" />
+                    <Setter Property="BorderThickness" Value="8" />
+                    <Setter Property="BorderBrush" Value="Black" />
+                </Style>
+            </Button.Resources>
+        </Button>
+
+        <Button
+            Grid.Row="2"
+            Grid.Column="3"
             Grid.ColumnSpan="5"
             Margin="10,5"
             Panel.ZIndex="2"

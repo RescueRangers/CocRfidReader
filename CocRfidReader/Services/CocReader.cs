@@ -22,15 +22,14 @@ namespace CocRfidReader.Services
             this.logger = logger;
         }
 
-        public async Task<Coc> GetAsync(string epc)
+        public async Task<Coc> GetAsync(string epc, CancellationToken cancellationToken)
         {
             try
             {
-                using var sql = new SqlConnection(configuration.GetSettings().ConnectionString);
-                return await sql.QueryFirstOrDefaultAsync<Coc>(@"
+                var query = @"
 with production as (
 SELECT TOP (1) 
-      A.[PRODUKTIONSNR]
+       A.[PRODUKTIONSNR]
 	  ,B.ItemNumber
 	  ,B.Name
 	  ,B.ItemText
@@ -46,10 +45,12 @@ SELECT TOP (1)
                      AND p.PRODUKTIONSNR = (select PRODUKTIONSNR from production)) 
   )
   SELECT * from production, account
-", new { EPC = epc });
+";
+                using var sql = new SqlConnection(configuration.GetSettings().ConnectionString);
+                return await sql.QueryFirstOrDefaultAsync<Coc>(new CommandDefinition(query, parameters: new { EPC = epc }, cancellationToken: cancellationToken));
 
             }
-            catch (Exception ex)
+            catch (SqlException ex)
             {
                 logger?.LogError(ex.Message);
                 throw;
