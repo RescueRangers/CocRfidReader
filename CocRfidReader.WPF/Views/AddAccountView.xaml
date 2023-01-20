@@ -9,6 +9,7 @@
     Width="410"
     Height="230"
     ResizeMode="NoResize"
+    Topmost="True"
     mc:Ignorable="d">
     <Window.Resources>
         <ResourceDictionary>

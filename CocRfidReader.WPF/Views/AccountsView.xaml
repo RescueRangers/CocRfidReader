@@ -10,6 +10,7 @@
     Title="AccountsView"
     Width="800"
     Height="450"
+    Topmost="True"
     mc:Ignorable="d">
     <b:Interaction.Triggers>
         <b:EventTrigger EventName="Closing">

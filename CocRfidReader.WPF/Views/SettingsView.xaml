@@ -13,6 +13,7 @@
     MaxWidth="400"
     MaxHeight="600"
     ResizeMode="NoResize"
+    Topmost="True"
     mc:Ignorable="d">
     <Window.Resources>
         <ResourceDictionary>
