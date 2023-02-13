@@ -59,7 +59,6 @@ namespace CocRfidReader.Services
                 _logger?.LogError(e, "Failed to connect to IP:{Address}", new { Address = hostName });
                 throw;
             }
-            
         }
 
         public void Disconnect()

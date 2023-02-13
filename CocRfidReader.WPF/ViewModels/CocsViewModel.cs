@@ -24,10 +24,14 @@ namespace CocRfidReader.WPF.ViewModels
 
         public void AddCoc(CocViewModel coc)
         {
-            App.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, ()=>
+            App.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, () =>
             {
+                var cocCount = Cocs.Count;
+                coc.Number = cocCount + 1;
                 Cocs.Add(coc);
             });
+            //cocs.Add(coc);
+            //OnPropertyChanged(nameof(Cocs));
         }
 
         private void DeleteCoc()

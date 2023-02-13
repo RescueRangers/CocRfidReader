@@ -18,6 +18,17 @@ namespace CocRfidReader.WPF.ViewModels
         private string? itemText;
         private string accountNumber;
         private bool isAccountCorrect;
+        private int number;
+
+        public int Number
+        {
+            get => number; 
+            set
+            {
+                number = value;
+                OnPropertyChanged(nameof(number));
+            }
+        }
 
         public string AccountNumber
         {
