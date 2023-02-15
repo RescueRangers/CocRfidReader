@@ -1,0 +1,19 @@
+{
+  "antena1Power": 20,
+  "antena2Power": 20,
+  "antena3Power": 20,
+  "antena4Power": 20,
+  "connectionString": "",
+  "enabledAntennas": 2,
+  "fromAddress": "",
+  "notifyAddresses": [
+
+  ],
+  "rampNumber": 1,
+  "readerIP": "172.25.194.83",
+  "readerReadTime": 20000,
+  "readerTimeOut": 3000,
+  "rfMode": 1000,
+  "sendGridAPI": "",
+  "session": 0
+}

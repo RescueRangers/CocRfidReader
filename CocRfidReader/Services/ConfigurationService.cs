@@ -13,18 +13,20 @@ namespace CocRfidReader.Services
         private ILogger<ConfigurationService> logger;
         private bool fileIsChanging = false;
         private SettingsModel? settings;
+        private string filePath;
 
         public event EventHandler SettingsChanged;
 
-        public ConfigurationService(ILogger<ConfigurationService> logger)
+        public ConfigurationService(ILogger<ConfigurationService> logger, string filePath = @".\Configuration\settings.json")
         {
             this.logger = logger;
+            this.filePath = filePath;
         }
 
         public SettingsModel GetSettings()
         {
             if (settings != null) return settings;
-            var file = new FileInfo(@".\Configuration\settings.json");
+            var file = new FileInfo(filePath);
 
             using var fileStream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             using var reader = new StreamReader(fileStream, Encoding.UTF8);
@@ -38,7 +40,7 @@ namespace CocRfidReader.Services
 
         public void SaveSettings(SettingsModel settings)
         {
-            var file = new FileInfo(@".\Configuration\settings.json");
+            var file = new FileInfo(filePath);
             var json = JsonSerializer.Serialize(settings);
 
             using var fileStream = new FileStream(file.FullName, FileMode.Truncate, FileAccess.Write, FileShare.ReadWrite);
@@ -60,9 +62,10 @@ namespace CocRfidReader.Services
 
         private void ConfigureWatcher()
         {
-            watcher = new FileSystemWatcher(@".\Configuration\", "settings.json");
+            var file = new FileInfo(filePath);
+            watcher = new FileSystemWatcher(file.Directory.FullName);
             watcher.EnableRaisingEvents = true;
-            watcher.NotifyFilter = NotifyFilters.Size;
+            watcher.NotifyFilter = NotifyFilters.Size | NotifyFilters.LastWrite;
 
             watcher.Changed += Configuration_Changed;
         }
@@ -72,7 +75,7 @@ namespace CocRfidReader.Services
             try
             {
                 if (fileIsChanging) return;
-                var file = new FileInfo(@".\Configuration\settings.json");
+                var file = new FileInfo(filePath);
 
                 using var fileStream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                 using var reader = new StreamReader(fileStream, Encoding.UTF8);
