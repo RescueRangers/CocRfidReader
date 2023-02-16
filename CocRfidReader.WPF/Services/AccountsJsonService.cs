@@ -20,18 +20,20 @@ namespace CocRfidReader.WPF.Services
         private IEnumerable<AccountViewModel>? accounts;
         private ILogger<AccountsJsonService> logger;
         private bool fileIsChanging = false;
+        private string accountsFilePath;
 
         public event EventHandler AccountsChanged;
 
-        public AccountsJsonService(ILogger<AccountsJsonService> logger)
+        public AccountsJsonService(ILogger<AccountsJsonService> logger, string accountsFilePath = @".\Configuration\accounts.json")
         {
             this.logger = logger;
+            this.accountsFilePath = accountsFilePath;
         }
 
         public async Task<IEnumerable<AccountViewModel>> GetAccounts()
         {
             if (accounts != null) return accounts;
-            var file = new FileInfo(@".\Configuration\accounts.json");
+            var file = new FileInfo(accountsFilePath);
 
             using var fileStream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             using var reader = new StreamReader(fileStream, Encoding.UTF8);
@@ -46,7 +48,7 @@ namespace CocRfidReader.WPF.Services
 
         public void SaveAccounts(IEnumerable<AccountViewModel> accounts)
         {
-            var file = new FileInfo(@".\Configuration\accounts.json");
+            var file = new FileInfo(accountsFilePath);
             var json = JsonSerializer.Serialize(accounts);
 
             using var fileStream = new FileStream(file.FullName, FileMode.Truncate, FileAccess.Write, FileShare.ReadWrite);
@@ -68,7 +70,8 @@ namespace CocRfidReader.WPF.Services
 
         private void ConfigureWatcher()
         {
-            watcher = new FileSystemWatcher(@".\Configuration\", "accounts.json");
+            var file = new FileInfo(accountsFilePath);
+            watcher = new FileSystemWatcher(file.Directory.FullName, file.Name);
             watcher.EnableRaisingEvents = true;
             watcher.NotifyFilter = NotifyFilters.Size;
 
@@ -80,7 +83,7 @@ namespace CocRfidReader.WPF.Services
             try
             {
                 if (fileIsChanging) return;
-                var file = new FileInfo(@".\Configuration\accounts.json");
+                var file = new FileInfo(accountsFilePath);
 
                 using var fileStream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                 using var reader = new StreamReader(fileStream, Encoding.UTF8);

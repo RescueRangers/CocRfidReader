@@ -63,7 +63,7 @@ namespace CocRfidReader.Services
         private void ConfigureWatcher()
         {
             var file = new FileInfo(filePath);
-            watcher = new FileSystemWatcher(file.Directory.FullName);
+            watcher = new FileSystemWatcher(file.Directory.FullName, file.Name);
             watcher.EnableRaisingEvents = true;
             watcher.NotifyFilter = NotifyFilters.Size | NotifyFilters.LastWrite;
 
