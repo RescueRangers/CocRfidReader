@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CocRfidReader.Services
 {
-    public class CocReader
+    public class CocReader : ICocReader
     {
         private ConfigurationService configuration;
         private ILogger<CocReader>? logger;
@@ -55,7 +55,7 @@ SELECT TOP (1)
                 logger?.LogError(ex.Message);
                 throw;
             }
-            
+
         }
     }
 }

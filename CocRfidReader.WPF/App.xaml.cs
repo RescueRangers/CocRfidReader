@@ -62,7 +62,7 @@ namespace CocRfidReader.WPF
                 })
 #endif
                 .AddSingleton<ReaderService>()
-                .AddSingleton<CocReader>()
+                .AddSingleton<ICocReader, CocReader>()
                 .AddSingleton<ItemReader>()
                 .AddSingleton<MainWindowViewModel>()
                 .AddTransient<MainWindow>()
@@ -73,6 +73,7 @@ namespace CocRfidReader.WPF
                 .AddTransient<AccountViewModel>()
                 .AddTransient<AddAccountView>()
                 .AddSingleton<CocsViewModel>()
+                .AddSingleton<TagsService>()
                 .AddSingleton<IMessagingService, WpfMessagingService>()
                 .AddSingleton<AccountsJsonService>()
                 .AddHostedService(sp => sp.GetRequiredService<AccountsJsonService>())

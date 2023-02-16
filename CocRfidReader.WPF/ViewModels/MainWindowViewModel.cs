@@ -10,6 +10,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
+using CocRfidReader.Model;
 using CocRfidReader.Services;
 using CocRfidReader.WPF.Messages;
 using CocRfidReader.WPF.Services;
@@ -26,7 +27,7 @@ namespace CocRfidReader.WPF.ViewModels
 {
     public class MainWindowViewModel : INotifyPropertyChanged
     {
-        private CocReader cocReader;
+        private TagsService tagsService;
         private ILogger<MainWindowViewModel>? logger;
         private IMessagingService? messagingService;
         private AccountsJsonService accountsService;
@@ -125,16 +126,17 @@ namespace CocRfidReader.WPF.ViewModels
         public IRelayCommand CancelLoadingCommand { get; set; }
 
         public MainWindowViewModel
-            (CocReader cocReader,
-            ReaderService readerService,
-            ConfigurationService configurationService,
-            AccountsJsonService accountsService,
-            ISendGridClient sendGridClient,
-            CocsViewModel cocsViewModel,
-            ILogger<MainWindowViewModel>? logger = null,
-            IMessagingService? messagingService = null)
+            (
+                ReaderService readerService,
+                ConfigurationService configurationService,
+                AccountsJsonService accountsService,
+                TagsService tagsService,
+                ISendGridClient sendGridClient,
+                CocsViewModel cocsViewModel,
+                ILogger<MainWindowViewModel>? logger = null,
+                IMessagingService? messagingService = null
+            )
         {
-            this.cocReader = cocReader;
             tags.CollectionChanged += Tags_CollectionChanged;
             this.logger = logger;
             this.messagingService = messagingService;
@@ -150,6 +152,7 @@ namespace CocRfidReader.WPF.ViewModels
 
 #if DEBUG
             PopulateCocs();
+            this.tagsService = tagsService;
 #endif
         }
 
@@ -400,14 +403,6 @@ Numery COC znajdują się w załączniku do tej wiadomości.");
             }
         }
 
-        private static void PopulateCCField(string[]? ccEmails, SendGridMessage msg)
-        {
-            foreach (var cc in ccEmails)
-            {
-                msg.AddCc(new EmailAddress(cc));
-            }
-        }
-
         private void InitializeCollections()
         {
             tags.Clear();
@@ -424,27 +419,10 @@ Numery COC znajdują się w załączniku do tej wiadomości.");
             if(cancellationTokenSource.IsCancellationRequested) return;
             if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add)
             {
-                var token = cancellationTokenSource.Token;
                 try
                 {
-                    var epcValue = e.NewValue.Epc.ToHexString();
-                    logger?.LogInformation("Getting COC from the database");
-                    var coc = await cocReader.GetAsync(epcValue, token);
-
-                    if (coc == null)
-                    {
-                        logger?.LogWarning($"Could not get coc number from EPC: {epcValue}");
-                        return;
-                    }
-
-                    logger?.LogInformation($"Database returned: {coc}");
-
-                    var cocVM = new CocViewModel(coc);
-                    if (GetHammingDistance(coc.AccountNumber, SelectedAccount.AccountNumber) < 2)
-                    {
-                        cocVM.IsAccountCorrect = true;
-                    }
-                    else
+                    var coc = await tagsService.GetCocFromTag(e.NewValue, SelectedAccount.AccountNumber);
+                    if (!coc.IsAccountCorrect)
                     {
                         await App.Current.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, () =>
                         {
@@ -452,8 +430,7 @@ Numery COC znajdują się w załączniku do tej wiadomości.");
                             klaxonSound.Play();
                         });
                     }
-
-                    CocsViewModel.AddCoc(cocVM);
+                    CocsViewModel.AddCoc(coc);
                 }
                 catch (SqlException ex)
                 {
@@ -461,21 +438,6 @@ Numery COC znajdują się w załączniku do tej wiadomości.");
                     messagingService?.DisplayMessage(ex.Message, MessageType.Error);
                 }
             }
-        }
-
-        private int GetHammingDistance(string s, string t)
-        {
-            if (s.Length != t.Length)
-            {
-                return 99;
-            }
-
-            int distance =
-                s.ToCharArray()
-                .Zip(t.ToCharArray(), (c1, c2) => new { c1, c2 })
-                .Count(m => m.c1 != m.c2);
-
-            return distance;
         }
 
         private void RaisePropertyChanged([CallerMemberName] string name = "")
