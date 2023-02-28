@@ -149,10 +149,10 @@ namespace CocRfidReader.WPF.ViewModels
             accountsService.AccountsChanged += AccountsService_AccountsChanged;
             SetUpCommands();
             this.configurationService = configurationService;
+            this.tagsService = tagsService;
 
 #if DEBUG
             PopulateCocs();
-            this.tagsService = tagsService;
 #endif
         }
 
