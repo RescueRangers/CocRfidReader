@@ -118,7 +118,7 @@ namespace CocRfidReader.WPF.ViewModels
             }
         }
 
-        public IAsyncRelayCommand StartReadCommand { get; private set; }
+        public IRelayCommand StartReadCommand { get; private set; }
         public IAsyncRelayCommand FinishLoadingCommand { get; private set; }
         public IRelayCommand ConnectionToggleCommand { get; set; }
         public IRelayCommand OpenSettingsCommand { get; set; }
@@ -178,7 +178,7 @@ namespace CocRfidReader.WPF.ViewModels
 
         private void SetUpCommands()
         {
-            StartReadCommand = new AsyncRelayCommand(StartRead, () => CanRead());
+            StartReadCommand = new RelayCommand(StartRead, () => CanRead());
             ConnectionToggleCommand = new RelayCommand(() => ToggleConnection(readerService));
             FinishLoadingCommand = new AsyncRelayCommand(FinishLoading, () => LoadingStarted);
             OpenSettingsCommand = new RelayCommand(() => WeakReferenceMessenger.Default.Send<OpenSettingsMessage>());
@@ -204,7 +204,7 @@ namespace CocRfidReader.WPF.ViewModels
             }
         }
 
-        private async Task StartRead()
+        private void StartRead()
         {
             LoadingStarted = true;
             cancellationTokenSource = new CancellationTokenSource();
@@ -464,6 +464,5 @@ Numery COC znajdują się w załączniku do tej wiadomości.");
             reader.Disconnect();
             Connected = false;
         }
-
     }
 }
