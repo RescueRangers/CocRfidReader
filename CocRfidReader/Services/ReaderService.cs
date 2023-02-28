@@ -49,14 +49,23 @@ namespace CocRfidReader.Services
             try
             {
                 _reader ??= new ImpinjReader();
-                _reader.ConnectTimeout = configuration.GetSettings().ReaderTimeOut.GetValueOrDefault(6000); ;
-                _logger?.LogDebug("Attempting connection to reader {0}", hostName);
+                _reader.ConnectTimeout = configuration
+                    .GetSettings()
+                    .ReaderTimeOut
+                    .GetValueOrDefault(6000);
+
+                _logger?
+                    .LogDebug($"Attempting connection to reader {hostName}");
                 _reader.Connect(hostName);
-                
             }
             catch(OctaneSdkException e)
             {
-                _logger?.LogError(e, "Failed to connect to IP:{Address}", new { Address = hostName });
+                _logger?.LogError
+                    (
+                        e, 
+                        "Failed to connect to IP:{Address}",
+                        new { Address = hostName }
+                    );
                 throw;
             }
         }
