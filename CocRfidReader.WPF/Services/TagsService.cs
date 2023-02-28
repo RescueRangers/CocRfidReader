@@ -38,14 +38,24 @@ namespace CocRfidReader.WPF.Services
 
                 if (coc == null)
                 {
-                    logger?.LogWarning($"Could not get coc number from EPC: {epcValue}");
-                    throw new ArgumentException("Could not get the COC from supplied EPC");
+                    logger?.LogWarning
+                    (
+                        $"Could not get coc number from EPC: {epcValue}"
+                    );
+                    throw new ArgumentException
+                    (
+                        "Could not get the COC from supplied EPC"
+                    );
                 }
 
                 logger?.LogInformation($"Database returned: {coc}");
 
                 var cocVM = new CocViewModel(coc);
-                if (GetHammingDistance(coc.AccountNumber, accountNumber) < 2)
+                if (GetHammingDistance
+                    (
+                        coc.AccountNumber, 
+                        accountNumber
+                    ) < 2)
                 {
                     cocVM.IsAccountCorrect = true;
                 }

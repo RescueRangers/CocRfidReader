@@ -421,12 +421,33 @@ Numery COC znajdują się w załączniku do tej wiadomości.");
             {
                 try
                 {
-                    var coc = await tagsService.GetCocFromTag(e.NewValue, SelectedAccount.AccountNumber);
+                    var coc = await tagsService.GetCocFromTag
+                    (
+                        e.NewValue, 
+                        SelectedAccount.AccountNumber
+                    );
                     if (!coc.IsAccountCorrect)
                     {
-                        await App.Current.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, () =>
+                        await App
+                                .Current
+                                .Dispatcher
+                                .BeginInvoke
+                                (
+                                    System
+                                        .Windows
+                                        .Threading
+                                        .DispatcherPriority
+                                        .Normal,
+                                    () =>
                         {
-                            klaxonSound.Open(new Uri(@".\Sounds\vuvuzela-37503.mp3", UriKind.Relative));
+                            klaxonSound.Open
+                            (
+                                new Uri
+                                (
+                                    @".\Sounds\vuvuzela-37503.mp3", 
+                                    UriKind.Relative
+                                )
+                            );
                             klaxonSound.Play();
                         });
                     }
