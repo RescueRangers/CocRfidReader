@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Media;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Threading;
-using CocRfidReader.Model;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 
@@ -30,8 +22,6 @@ namespace CocRfidReader.WPF.ViewModels
                 coc.Number = cocCount + 1;
                 Cocs.Add(coc);
             });
-            //cocs.Add(coc);
-            //OnPropertyChanged(nameof(Cocs));
         }
 
         private void DeleteCoc()
