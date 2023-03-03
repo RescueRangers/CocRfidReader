@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Interop;
+using System.Windows.Threading;
 
 namespace CocRfidReader.WPF.Services
 {
@@ -29,8 +31,9 @@ namespace CocRfidReader.WPF.Services
                     mboxImage = MessageBoxImage.Warning;
                     break;
             }
-
-            MessageBox.Show(message, caption, MessageBoxButton.OK, mboxImage);
+            Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() => {
+                MessageBox.Show(Application.Current.MainWindow, message, caption, MessageBoxButton.OK, mboxImage);
+            }));
         }
     }
 }
