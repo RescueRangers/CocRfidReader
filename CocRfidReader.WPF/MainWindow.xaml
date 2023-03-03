@@ -56,7 +56,7 @@
             BorderThickness="2"
             CornerRadius="15">
             <Grid>
-                <ComboBox
+                <userControls:FilterableComboBox
                     x:Name="PackingListTextBox"
                     Margin="10,1"
                     VerticalAlignment="Center"
@@ -66,20 +66,20 @@
                     BorderThickness="0"
                     FontSize="22"
                     FontWeight="Bold"
+                    IsEditable="True"
                     IsEnabled="{Binding LoadingStarted, Converter={StaticResource ReverseBoolConverter}}"
                     IsTextSearchCaseSensitive="False"
                     IsTextSearchEnabled="True"
                     ItemsSource="{Binding Accounts}"
-                    PreviewTextInput="PackingListTextBox_PreviewTextInput"
                     SelectedItem="{Binding SelectedAccount, Mode=TwoWay}"
-                    Style="{DynamicResource TransparentCombobox}"
-                    TextSearch.TextPath="AccountName">
+                    StaysOpenOnEdit="True"
+                    Style="{DynamicResource TransparentCombobox}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <views:AccountView DataContext="{Binding}" />
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
-                </ComboBox>
+                </userControls:FilterableComboBox>
             </Grid>
 
         </Border>
