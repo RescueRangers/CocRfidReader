@@ -115,5 +115,10 @@ namespace CocRfidReader.WPF.ViewModels
                 return true;
             return false;
         }
+
+        public override string ToString()
+        {
+            return $"{AccountNumber} | {AccountName} | {ZipCity}";
+        }
     }
 }
