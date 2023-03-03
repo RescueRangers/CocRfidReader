@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -39,6 +39,7 @@ namespace CocRfidReader.WPF.UserControls
             var ipOctets = ip.Split('.');
             if(ipOctets.Length != 4) return;
             if(ipOctets.Any(s => s.Length > 3)) return;
+            if(ipOctets.Any(s => IsTextNotNumeric(s))) return;
 
             var control = (IpTextBox)d;
             control.UpdateOctets(ipOctets);
@@ -190,14 +191,13 @@ namespace CocRfidReader.WPF.UserControls
 
         private void Octet_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
-            e.Handled = IsTextNumeric(e.Text);
+            e.Handled = IsTextNotNumeric(e.Text);
         }
 
-        private static bool IsTextNumeric(string str)
+        private static bool IsTextNotNumeric(string str)
         {
             System.Text.RegularExpressions.Regex reg = new System.Text.RegularExpressions.Regex("[^0-9]");
             return reg.IsMatch(str);
-
         }
 
         private void Octet_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
