@@ -187,7 +187,7 @@
             <DataGrid
                 Margin="5"
                 AutoGenerateColumns="False"
-                CanUserAddRows="True"
+                CanUserAddRows="False"
                 ItemsSource="{Binding NotifyAddresses, UpdateSourceTrigger=PropertyChanged}">
                 <DataGrid.Columns>
                     <DataGridTextColumn Width="*" Binding="{Binding Path=Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
@@ -230,9 +230,9 @@
                                     Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}, Path=DataContext.DeleteAddressCommand}"
                                     CommandParameter="{Binding}">
                                     <Button.Content>
-                                        <Image Width="20">
+                                        <Image Width="25">
                                             <Image.Source>
-                                                <BitmapImage DecodePixelWidth="20" UriSource="../Images/remove.png" />
+                                                <BitmapImage DecodePixelWidth="25" UriSource="../Images/remove.png" />
                                             </Image.Source>
                                         </Image>
                                     </Button.Content>

@@ -52,9 +52,9 @@
                                 BorderThickness="0"
                                 Command="{Binding DataContext.DeleteAccountCommand, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"
                                 CommandParameter="{Binding}">
-                                <Image Width="20">
+                                <Image Width="25">
                                     <Image.Source>
-                                        <BitmapImage DecodePixelWidth="20" UriSource="../Images/remove.png" />
+                                        <BitmapImage DecodePixelWidth="25" UriSource="../Images/remove.png" />
                                     </Image.Source>
                                 </Image>
                             </Button>
